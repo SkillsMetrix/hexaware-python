@@ -17,3 +17,13 @@ print (res)
 
 greater_than=[ num for num in basicData if num >40]
 print(greater_than)
+
+
+----
+employees=[
+    {"name":"Alice","age":24,"city":"Mumbai"},
+    {"name":"Bob","age":30,"city":"Delhi"},
+    {"name":"David","age":28,"city":"Pune"},
+    {"name":"Charlie","age":22,"city":"Delhi"},
+    {"name":"Eva","age":35,"city":"Mumbai"}
+]
