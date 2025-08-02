@@ -1,18 +1,53 @@
-employees=[
-    {"name":"Alice","age":24,"city":"Mumbai"},
-    {"name":"Bob","age":30,"city":"Delhi"},
-    {"name":"David","age":28,"city":"Pune"},
-    {"name":"Charlie","age":22,"city":"Delhi"},
-    {"name":"Eva","age":35,"city":"Mumbai"}
-]
-# print only the names
+employees = {}   
+i = 0
 
-name=[emp["name"] for emp in employees]
-print(name)
-name=[emp["name"] for emp in employees if emp["age"] > 25]
-print(name)
-mumbai_data=[emp["name"] for emp in employees if emp["city"].lower() =="mumbai"]
-print(mumbai_data)
-user_summary=[f"{emp['name']} from {emp['city']} is {emp['age']} years old" for emp in employees]
-for data in user_summary:
-    print(data)
+ 
+while i < 5:
+    emp_id = input("Enter employee ID or name (or 'stop' to end): ").strip()
+    if emp_id.lower() == 'stop':
+        break
+
+    age_input = input("Enter age: ").strip()
+    if not age_input.isdigit():
+        print("Invalid age. Skipping...\n")
+        continue
+
+    age = int(age_input)
+    city = input("Enter city: ").strip()
+
+     
+    employees[emp_id] = {
+        "age": age,
+        "city": city
+    }
+
+    i += 1
+    print("Employee added!\n")
+
+ 
+emp_ids = [eid for eid in employees]
+
+ 
+emp_cities = [(eid, data["city"]) for eid, data in employees.items()]
+
+ 
+older_employees = {eid: data for eid, data in employees.items() if data["age"] > 25}
+
+ 
+summaries = [f"{eid} ({data['age']} yrs) from {data['city']}" for eid, data in employees.items()]
+
+ 
+delhi_emps = [eid for eid, data in employees.items() if data["city"].lower() == "delhi"]
+
+ 
+
+print("\n--- Employee Data  (Using Dictionary) ---\n")
+print("1. All Employee IDs:", emp_ids)
+print("2. (ID, City) List:", emp_cities)
+print("3. Employees older than 25:")
+for eid, data in older_employees.items():
+    print(f"   - {eid}: {data}")
+print("4. Summary List:")
+for summary in summaries:
+    print("   -", summary)
+print("5. Employees from Delhi:", delhi_emps)
