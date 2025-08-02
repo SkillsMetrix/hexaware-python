@@ -1,38 +1,13 @@
+while ,break and continue
 
-hexaware_employees=[]
-i=0
+keep asking the user to enter employee names
 
-while i <5:
-    name= input(f"Enter employee names (type 'skip' to skip and 'stop' to end the loop)").strip()
-    if name.lower() == 'skip':
-        print('Skipping.... \n')
-        continue
+skip -> skip that entry
+stop -> break the loop
+store the given data in a list
+stop the entries after 5 max
 
-    if name.lower() == 'stop':
-        print('Stopping the loop.... \n')
-        break
+----------
 
-    
-    while True:
-        age_input= input("Enter User Age: ").strip()
-        if age_input.isdigit():
-            age =int(age_input)
-            break
-        else:
-            print("Please enter valid Age of user")
-    
-    city = input("Enter User City: ").strip()
-    # dictionary
-    employee ={
-        "name": name,
-        "age": age,
-        "city": city
-    }
-
-    hexaware_employees.append(employee)
-    i +=1
-    print("Employee added")
-
-print("\n Details of Employees...!")
-for index,emp in enumerate(hexaware_employees,start=1):
-    print(f" {index}. UserName : {emp['name']}, Age: {emp['age']}, City: {emp['city']}")
+name,age and city
+data is stored in list of dic
