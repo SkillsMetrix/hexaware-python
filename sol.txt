@@ -1,55 +1,16 @@
-def collect_and_analyze_employees(max_employees=5):
-    employees = []
-    i = 0
 
-    
-    while i < max_employees:
-        name = input("Enter employee name (or 'stop' to end): ").strip()
-        if name.lower() == 'stop':
-            break
+class Employee:
+    name='admin'
+    # constructor
+    def __init__(self,age,city):
+        self.age=age
+        self.city=city
+ 
+    # predefined function ,which gets called once you print the object
+    def __str__(self):
+        return f"{self.age}--{self.city}"
 
-        age_input = input("Enter age: ").strip()
-        if not age_input.isdigit():
-            print("Invalid age. Skipping...\n")
-            continue
-
-        age = int(age_input)
-        city = input("Enter city: ").strip()
-
-        employees.append({
-            "name": name,
-            "age": age,
-            "city": city
-        })
-
-        i += 1
-        print("Employee added.\n")
-
-    # List Comprehension
-    names = [emp["name"] for emp in employees]
-    older_than_25 = [emp for emp in employees if emp["age"] > 25]
-    from_delhi = [emp["name"] for emp in employees if emp["city"].lower() == "delhi"]
-    summaries = [f"{emp['name']} ({emp['age']} yrs) from {emp['city']}" for emp in employees]
-    name_age_pairs = [(emp["name"], emp["age"]) for emp in employees]
-
-    # Show Results
-    print("\n--- Analysis on Entered Employee Data ---\n")
-    print("1. All Names:", names)
-
-    print("2. Employees older than 25:")
-    for emp in older_than_25:
-        print(f"   - {emp['name']} ({emp['age']})")
-
-    print("3. Names from Delhi:", from_delhi)
-
-    print("4. Summary List:")
-    for summary in summaries:
-        print("   -", summary)
-
-    print("5. Name-Age Pairs (Tuples):", name_age_pairs)
-
-    return employees
-
-
-
-collect_and_analyze_employees(max_employees=3)
+emp= Employee(21,'Mumbai')
+emp2= Employee(22,'NY')
+print(emp)
+print(emp2)
