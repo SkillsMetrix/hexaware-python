@@ -1,16 +1,19 @@
 
-class Employee:
-    name='admin'
-    # constructor
-    def __init__(self,age,city):
-        self.age=age
-        self.city=city
- 
-    # predefined function ,which gets called once you print the object
-    def __str__(self):
-        return f"{self.age}--{self.city}"
 
-emp= Employee(21,'Mumbai')
-emp2= Employee(22,'NY')
-print(emp)
-print(emp2)
+class Student():
+
+    def __init__(self,rollno,name,subject,marks):
+        self.rollno=rollno
+        self.name=name
+        self.subject=subject
+        self.marks=marks
+
+    def displayData(self):
+        print(f"Name is {self.name} and subject is {self.subject}")
+    
+    def __str__(self):
+            return f"{self.name} {self.subject} {self.marks} {self.rollno}"
+
+stu= Student(213,'sam','computers',34)
+print(stu)
+stu.displayData()
