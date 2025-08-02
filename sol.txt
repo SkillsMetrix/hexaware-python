@@ -1,13 +1,19 @@
-while ,break and continue
 
-keep asking the user to enter employee names
+# simplest way
+basicData=[2,4,70,9,6]
 
-skip -> skip that entry
-stop -> break the loop
-store the given data in a list
-stop the entries after 5 max
+# create an empty list
 
-----------
+result=[]
 
-name,age and city
-data is stored in list of dic
+for val in basicData:
+    result.append(val*2)
+print(result)
+
+# Using list comp
+
+res=[val * 2 for val in basicData]
+print (res)
+
+greater_than=[ num for num in basicData if num >40]
+print(greater_than)
