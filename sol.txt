@@ -12,9 +12,27 @@ while i <5:
         print('Stopping the loop.... \n')
         break
 
-    hexaware_employees.append(name)
+    
+    while True:
+        age_input= input("Enter User Age: ").strip()
+        if age_input.isdigit():
+            age =int(age_input)
+            break
+        else:
+            print("Please enter valid Age of user")
+    
+    city = input("Enter User City: ").strip()
+    # dictionary
+    employee ={
+        "name": name,
+        "age": age,
+        "city": city
+    }
+
+    hexaware_employees.append(employee)
     i +=1
+    print("Employee added")
 
 print("\n Details of Employees...!")
-for emp in hexaware_employees:
-    print(f"{emp}")
+for index,emp in enumerate(hexaware_employees,start=1):
+    print(f" {index}. UserName : {emp['name']}, Age: {emp['age']}, City: {emp['city']}")
