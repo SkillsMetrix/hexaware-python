@@ -1,0 +1,20 @@
+
+hexaware_employees=[]
+i=0
+
+while i <5:
+    name= input(f"Enter employee names (type 'skip' to skip and 'stop' to end the loop)").strip()
+    if name.lower() == 'skip':
+        print('Skipping.... \n')
+        continue
+
+    if name.lower() == 'stop':
+        print('Stopping the loop.... \n')
+        break
+
+    hexaware_employees.append(name)
+    i +=1
+
+print("\n Details of Employees...!")
+for emp in hexaware_employees:
+    print(f"{emp}")
