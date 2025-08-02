@@ -1,24 +1,55 @@
+def collect_and_analyze_employees(max_employees=5):
+    employees = []
+    i = 0
 
-#sol1
+    
+    while i < max_employees:
+        name = input("Enter employee name (or 'stop' to end): ").strip()
+        if name.lower() == 'stop':
+            break
 
-""" def sumOfArray(arr):
-    total=0
-    for num in arr:
-        total +=num
-    return total
+        age_input = input("Enter age: ").strip()
+        if not age_input.isdigit():
+            print("Invalid age. Skipping...\n")
+            continue
 
-numbers=[23,54,62,11]
-result= sumOfArray(numbers)
-print(f"Addition is  {result}")
- """
-#sol2
+        age = int(age_input)
+        city = input("Enter city: ").strip()
 
-def sumOfArray(*arr):
-    total=0
-    for num in arr:
-        total +=num
-    return total
+        employees.append({
+            "name": name,
+            "age": age,
+            "city": city
+        })
 
- 
-result= sumOfArray(23,54,62,11)
-print(f"Addition is  {result}")
+        i += 1
+        print("Employee added.\n")
+
+    # List Comprehension
+    names = [emp["name"] for emp in employees]
+    older_than_25 = [emp for emp in employees if emp["age"] > 25]
+    from_delhi = [emp["name"] for emp in employees if emp["city"].lower() == "delhi"]
+    summaries = [f"{emp['name']} ({emp['age']} yrs) from {emp['city']}" for emp in employees]
+    name_age_pairs = [(emp["name"], emp["age"]) for emp in employees]
+
+    # Show Results
+    print("\n--- Analysis on Entered Employee Data ---\n")
+    print("1. All Names:", names)
+
+    print("2. Employees older than 25:")
+    for emp in older_than_25:
+        print(f"   - {emp['name']} ({emp['age']})")
+
+    print("3. Names from Delhi:", from_delhi)
+
+    print("4. Summary List:")
+    for summary in summaries:
+        print("   -", summary)
+
+    print("5. Name-Age Pairs (Tuples):", name_age_pairs)
+
+    return employees
+
+
+
+collect_and_analyze_employees(max_employees=3)
