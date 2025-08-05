@@ -1,39 +1,5 @@
-from abc import ABC,abstractmethod
+declare the initial_balance var=2000
 
-
-class RBI(ABC):
-    @abstractmethod
-    def deposit(self):
-        pass
-    @abstractmethod
-    def withdraw(self):
-        pass
-    @abstractmethod
-    def checkBalance(self):
-        pass
-
-
-""" 
-class CitiBank(RBI):
-    # overide method
-    def deposit(self):
-        print('money deposited to CITI')
-
-bank2=CitiBank()
-bank2.deposit() """
-
-
-------------
-from RBIBase import RBI
-
-class JPMC(RBI):
-    # overide method
-    def deposit(self):
-        print('money deposited to JPMC')
-    def withdraw(self):
-        print('money deposited to JPMC')
-    def checkBalance(self):
-        print('money deposited to JPMC')
-
-bank=JPMC()
-bank.deposit()
+use @property and setter functions 
+and make sure none withdraw amount > initial_balance , if so ,show error message
+to display the data use repr
