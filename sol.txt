@@ -1,34 +1,35 @@
-
 class Employee:
- 
+    def __init__(self, first_name, last_name, salary):
+        self.first_name = first_name
+        self.last_name = last_name
+        self._salary = salary  # Protected attribute
 
-    def __init__(self,name,email,salary):
-        self.name=name
-        self.salary=salary
-        self.email=email
-    
     def __repr__(self):
-        return f"Employee( '{self.name}' , '{self.email}' , '{self.salary})'"
-    
+        return f"Employee('{self.first_name}', '{self.last_name}', {self._salary})"
+
     @property
     def email(self):
-        return f"{self.name.lower()}@hexaware.com"
+        return f"{self.first_name.lower()}.{self.last_name.lower()}@company.com"
+
     @property
-    def name(self):
-        return f"{self.name}"
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     @property
     def salary(self):
-        return f"{self.salary}"
+        return self._salary
+
     @salary.setter
-    def salary(self,value):
+    def salary(self, value):
         if value < 0:
-            raise ValueError("Salary must  be non-negative")
-        self.salary=value
+            raise ValueError("Salary must be non-negative")
+        self._salary = value
 
-emp=Employee('user1','user@mail.com',3000)
+# Example usage
+emp = Employee("John", "Doe", 50000)
 
-print(repr(emp))
-print(emp.email)
-emp.salary=4500
+print(repr(emp))             
+print(emp.email)            
+print(emp.full_name)          
+emp.salary = 55000          
 print(emp.salary)
-    
