@@ -25,7 +25,7 @@ class Employee:
             raise ValueError("Salary must be non-negative")
         self._salary = value
 
-# Example usage
+ 
 emp = Employee("John", "Doe", 50000)
 
 print(repr(emp))             
