@@ -9,21 +9,31 @@ class RBI(ABC):
     def withdraw(self):
         pass
     @abstractmethod
-    def chackBalance(self):
+    def checkBalance(self):
         pass
 
-class JPMC(RBI):
-    # overide method
-    def deposit(self):
-        print('money deposited to JPMC')
 
-bank=JPMC()
-bank.deposit()
-
+""" 
 class CitiBank(RBI):
     # overide method
     def deposit(self):
         print('money deposited to CITI')
 
 bank2=CitiBank()
-bank2.deposit()
+bank2.deposit() """
+
+
+------------
+from RBIBase import RBI
+
+class JPMC(RBI):
+    # overide method
+    def deposit(self):
+        print('money deposited to JPMC')
+    def withdraw(self):
+        print('money deposited to JPMC')
+    def checkBalance(self):
+        print('money deposited to JPMC')
+
+bank=JPMC()
+bank.deposit()
