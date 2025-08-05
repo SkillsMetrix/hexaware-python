@@ -1,19 +1,30 @@
+class Employee:
+    company_name='Hexaware'
 
-
-class Student():
-
-    def __init__(self,rollno,name,subject,marks):
-        self.rollno=rollno
+    def __init__(self,name,salary):
         self.name=name
-        self.subject=subject
-        self.marks=marks
-
-    def displayData(self):
-        print(f"Name is {self.name} and subject is {self.subject}")
+        self.salary=salary
     
-    def __str__(self):
-            return f"{self.name} {self.subject} {self.marks} {self.rollno}"
+    @classmethod
+    def change_company(cls,new_name):
+        cls.company_name=new_name
+    @staticmethod
+    def is_working_day(day):
+        return day.lower() not in ['saturday','sunday']
 
-stu= Student(213,'sam','computers',34)
-print(stu)
-stu.displayData()
+    def display_data(self):
+        print(f"{self.name} works at {Employee.company_name} with salary {self.salary}")
+
+#obj-1
+empdata= Employee("sam",5000)
+empdata.display_data()
+ 
+
+Employee.change_company("Hexaware Global")
+
+#obj-2
+empdata2= Employee("Alice",6000)
+empdata2.display_data()
+
+print(Employee.is_working_day("Monday"))
+print(Employee.is_working_day("sunday"))
