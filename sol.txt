@@ -1,30 +1,34 @@
+
 class Employee:
-    company_name='Hexaware'
-
-    def __init__(self,name,salary):
-        self.name=name
-        self.salary=salary
-    
-    @classmethod
-    def change_company(cls,new_name):
-        cls.company_name=new_name
-    @staticmethod
-    def is_working_day(day):
-        return day.lower() not in ['saturday','sunday']
-
-    def display_data(self):
-        print(f"{self.name} works at {Employee.company_name} with salary {self.salary}")
-
-#obj-1
-empdata= Employee("sam",5000)
-empdata.display_data()
  
 
-Employee.change_company("Hexaware Global")
+    def __init__(self,name,email,salary):
+        self.name=name
+        self.salary=salary
+        self.email=email
+    
+    def __repr__(self):
+        return f"Employee( '{self.name}' , '{self.email}' , '{self.salary})'"
+    
+    @property
+    def email(self):
+        return f"{self.name.lower()}@hexaware.com"
+    @property
+    def name(self):
+        return f"{self.name}"
+    @property
+    def salary(self):
+        return f"{self.salary}"
+    @salary.setter
+    def salary(self,value):
+        if value < 0:
+            raise ValueError("Salary must  be non-negative")
+        self.salary=value
 
-#obj-2
-empdata2= Employee("Alice",6000)
-empdata2.display_data()
+emp=Employee('user1','user@mail.com',3000)
 
-print(Employee.is_working_day("Monday"))
-print(Employee.is_working_day("sunday"))
+print(repr(emp))
+print(emp.email)
+emp.salary=4500
+print(emp.salary)
+    
