@@ -3,3 +3,4 @@ declare the initial_balance var=2000
 use @property and setter functions 
 and make sure none withdraw amount > initial_balance , if so ,show error message
 to display the data use repr
+use __init__ to initialize the var
