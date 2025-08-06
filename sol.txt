@@ -44,7 +44,10 @@ hr_data= list(filter(lambda emp :emp["department"] =='HR',employees))
 for emp in hr_data:
     print(f"{emp['name']} works in: HR") 
 
-# reduce
+# reduce employees[0]
+""" step 1 acc=0
+step 2 acc=0 + emp1["salary"]
+step3 emp1["salary"] +emp2["salary"] """
 
 total_payout=reduce(lambda acc,emp:acc+emp["salary"],employees,0)
 print(total_payout)
@@ -53,6 +56,7 @@ print(total_payout)
 # filter emp over 30 , extract salaries , calculate
 
 filter_data= list(filter(lambda emp: emp['age'] >30 and emp['department'] == 'HR',employees))
+print(filter_data)
 salaries= list(map(lambda emp: emp['salary'],filter_data))
 if salaries:
     total=reduce(lambda acc,s: acc+ s,salaries)
