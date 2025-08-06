@@ -11,3 +11,14 @@ result=list(zip(usernames,marks))
 #looping
 for name,marks in zip_longest(usernames,marks,fillvalue='N/A'):
     print(f"{name} scored: {marks}")
+
+
+
+
+employees = [
+    {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
+    {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
+    {"id": 103, "name": "Charlie", "age": 25, "salary": 55000, "department": "Finance"},
+    {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
+    {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
+]
