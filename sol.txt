@@ -1,6 +1,13 @@
-declare the initial_balance var=2000
 
-use @property and setter functions 
-and make sure none withdraw amount > initial_balance , if so ,show error message
-to display the data use repr
-use __init__ to initialize the var
+from itertools import zip_longest
+usernames=['alice','sam','bob','shalini','charlie']
+marks=[90,45,67,90]
+
+
+result=list(zip(usernames,marks))
+
+#print(result)
+
+#looping
+for name,marks in zip_longest(usernames,marks,fillvalue='N/A'):
+    print(f"{name} scored: {marks}")
