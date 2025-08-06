@@ -1,5 +1,5 @@
 
-
+from functools import reduce
 userName='administrator'
 
 newName= lambda func:func.upper()
@@ -23,13 +23,13 @@ print(checkValue(10))
 print(checkValue(5))
 
 employees = [
-    {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
+    {"id": 101, "name": "Alice", "age": 45, "salary": 50000, "department": "HR"},
     {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
     {"id": 103, "name": "Charlie", "age": 25, "salary": 55000, "department": "Finance"},
     {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
-    {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
+    {"id": 105, "name": "Eva", "age": 40, "salary": 65000, "department": "HR"},
 ]
-# calculate hike
+""" # calculate hike
 bonus= lambda emp: emp["salary"] *0.10
 print(bonus(employees[0]))
 
@@ -37,4 +37,26 @@ print(bonus(employees[0]))
 updated_income=list(map(lambda emp: {**emp, "salary":emp["salary"] *1.05},employees))
 
 for emp in updated_income:
-    print(f"{emp['name']} new Salary: {emp['salary']}")
+    print(f"{emp['name']} new Salary: {emp['salary']}") """
+
+# filter
+hr_data= list(filter(lambda emp :emp["department"] =='HR',employees))
+for emp in hr_data:
+    print(f"{emp['name']} works in: HR") 
+
+# reduce
+
+total_payout=reduce(lambda acc,emp:acc+emp["salary"],employees,0)
+print(total_payout)
+
+# find the avg salary of employee over 30 in HR
+# filter emp over 30 , extract salaries , calculate
+
+filter_data= list(filter(lambda emp: emp['age'] >30 and emp['department'] == 'HR',employees))
+salaries= list(map(lambda emp: emp['salary'],filter_data))
+if salaries:
+    total=reduce(lambda acc,s: acc+ s,salaries)
+    avg= total/len(salaries)
+    print(f"Average salary (HT,age >30): {avg}")
+else:
+    print("No Matching found")   
