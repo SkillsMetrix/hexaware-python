@@ -1,19 +1,4 @@
 
-from itertools import zip_longest
-usernames=['alice','sam','bob','shalini','charlie']
-marks=[90,45,67,90]
-
-
-result=list(zip(usernames,marks))
-
-#print(result)
-
-#looping
-for name,marks in zip_longest(usernames,marks,fillvalue='N/A'):
-    print(f"{name} scored: {marks}")
-
-
-
 
 userName='administrator'
 
@@ -37,10 +22,6 @@ checkValue= lambda x: "Even Value" if x % 2 ==0 else "Odd Value"
 print(checkValue(10))
 print(checkValue(5))
 
-
-
---------------
-
 employees = [
     {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
     {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
@@ -48,3 +29,12 @@ employees = [
     {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
     {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
 ]
+# calculate hike
+bonus= lambda emp: emp["salary"] *0.10
+print(bonus(employees[0]))
+
+#map with lambda to add bonus 5%
+updated_income=list(map(lambda emp: {**emp, "salary":emp["salary"] *1.05},employees))
+
+for emp in updated_income:
+    print(f"{emp['name']} new Salary: {emp['salary']}")
