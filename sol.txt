@@ -15,6 +15,32 @@ for name,marks in zip_longest(usernames,marks,fillvalue='N/A'):
 
 
 
+userName='administrator'
+
+newName= lambda func:func.upper()
+
+print(newName(userName))
+
+#using lambda
+first= lambda x: x ** 2
+print(first(4))
+
+# using fun
+
+def sqr(x):
+    return x ** 2
+print(sqr(4))
+
+# even or odd
+checkValue= lambda x: "Even Value" if x % 2 ==0 else "Odd Value"
+
+print(checkValue(10))
+print(checkValue(5))
+
+
+
+--------------
+
 employees = [
     {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
     {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
