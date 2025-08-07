@@ -1,66 +1,35 @@
 
-from functools import reduce
-userName='administrator'
+class InvalidAgeError(Exception):
+    """age is < 18 """
+    pass
+class NegativeSalaryError(Exception):
+    """when salary is negative """
+    pass
+class EmptyNameError(Exception):
+    """NAme is blank """
+    pass
 
-newName= lambda func:func.upper()
+class Employee:
 
-print(newName(userName))
+    def __init__(self,name,age,salary):
+        if not name.strip():
+            raise EmptyNameError("Employee name cant be empty")
+        if age < 18:
+            raise InvalidAgeError("Employee must be in valid age Range (i.e) between 18-60")
+        
+        if(salary <0):
+            raise NegativeSalaryError("Salary cant be Negative")
+    
+    def __str__(self):
+        return f"Employee (Name: {self.name} , Age: {self.age} , Salary: ${self.salary})"
 
-#using lambda
-first= lambda x: x ** 2
-print(first(4))
+try:
+    empData= Employee(name="sam",age=19,salary=34344)
+    print(empData)
 
-# using fun
-
-def sqr(x):
-    return x ** 2
-print(sqr(4))
-
-# even or odd
-checkValue= lambda x: "Even Value" if x % 2 ==0 else "Odd Value"
-
-print(checkValue(10))
-print(checkValue(5))
-
-employees = [
-    {"id": 101, "name": "Alice", "age": 45, "salary": 50000, "department": "HR"},
-    {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
-    {"id": 103, "name": "Charlie", "age": 25, "salary": 55000, "department": "Finance"},
-    {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
-    {"id": 105, "name": "Eva", "age": 40, "salary": 65000, "department": "HR"},
-]
-""" # calculate hike
-bonus= lambda emp: emp["salary"] *0.10
-print(bonus(employees[0]))
-
-#map with lambda to add bonus 5%
-updated_income=list(map(lambda emp: {**emp, "salary":emp["salary"] *1.05},employees))
-
-for emp in updated_income:
-    print(f"{emp['name']} new Salary: {emp['salary']}") """
-
-# filter
-hr_data= list(filter(lambda emp :emp["department"] =='HR',employees))
-for emp in hr_data:
-    print(f"{emp['name']} works in: HR") 
-
-# reduce employees[0]
-""" step 1 acc=0
-step 2 acc=0 + emp1["salary"]
-step3 emp1["salary"] +emp2["salary"] """
-
-total_payout=reduce(lambda acc,emp:acc+emp["salary"],employees,0)
-print(total_payout)
-
-# find the avg salary of employee over 30 in HR
-# filter emp over 30 , extract salaries , calculate
-
-filter_data= list(filter(lambda emp: emp['age'] >30 and emp['department'] == 'HR',employees))
-print(filter_data)
-salaries= list(map(lambda emp: emp['salary'],filter_data))
-if salaries:
-    total=reduce(lambda acc,s: acc+ s,salaries)
-    avg= total/len(salaries)
-    print(f"Average salary (HT,age >30): {avg}")
-else:
-    print("No Matching found")   
+except EmptyNameError as e:
+    print(f"Name Error {e}")
+except InvalidAgeError as e:
+    print(f"Age Error {e}")
+except NegativeSalaryError as e:
+    print(f"Salary Error {e}")
