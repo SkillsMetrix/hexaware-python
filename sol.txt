@@ -85,7 +85,7 @@ try:
     high_paid_employees = list(filter(lambda emp: emp["salary"] > 60000, updated_salaries))
 
     # Step 3: Print results
-    print("🧾 Employees with updated salary > 60000:")
+    print(" Employees with updated salary > 60000:")
     for emp in high_paid_employees:
         name = emp.get("name", "Unknown")
         salary = emp.get("salary", 0)
