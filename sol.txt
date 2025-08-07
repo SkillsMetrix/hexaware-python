@@ -1,3 +1,4 @@
+from AllException import ItemNotFoundError,EmptyCartError
 class ShoppingCart:
     def __init__(self):
         self.items = {}
@@ -7,12 +8,14 @@ class ShoppingCart:
         print(f"Added {name} - ₹{price}")
 
     def remove_item(self, name):
-        
+        if name not in self.items:
+            raise ItemNotFoundError(f"Item not found {name}")
         del self.items[name]
         print(f"Removed {name}")
 
     def calculate_total(self):
-       
+        if  not self.items:
+            raise EmptyCartError("cart is Empty") 
         total = sum(self.items.values())
         print(f"Total Amount: ₹{total}")
         return total
@@ -20,12 +23,21 @@ class ShoppingCart:
 
 cart = ShoppingCart()
 
-
+try:
     
-cart.add_item("Laptop", 50000)
-cart.add_item("Mouse", 1500)
+    cart.add_item("Laptop", 50000)
+    cart.add_item("Mouse", 1500)
     
      
-cart.remove_item("Keyboard")   
+    #cart.remove_item("Keyboard")   
     
-cart.calculate_total()
+    cart.calculate_total()
+except ItemNotFoundError as e:
+    print("item Error ",e)
+except EmptyCartError as e:
+    print("Cart Error ",e)
+except Exception as e:
+    print("General Error ",e)
+
+finally:
+    print("Operation completed...! Thanks for shopping with us")
