@@ -1,35 +1,31 @@
+class ShoppingCart:
+    def __init__(self):
+        self.items = {}
 
-class InvalidAgeError(Exception):
-    """age is < 18 """
-    pass
-class NegativeSalaryError(Exception):
-    """when salary is negative """
-    pass
-class EmptyNameError(Exception):
-    """NAme is blank """
-    pass
+    def add_item(self, name, price):
+        self.items[name] = price
+        print(f"Added {name} - ₹{price}")
 
-class Employee:
-
-    def __init__(self,name,age,salary):
-        if not name.strip():
-            raise EmptyNameError("Employee name cant be empty")
-        if age < 18:
-            raise InvalidAgeError("Employee must be in valid age Range (i.e) between 18-60")
+    def remove_item(self, name):
         
-        if(salary <0):
-            raise NegativeSalaryError("Salary cant be Negative")
+        del self.items[name]
+        print(f"Removed {name}")
+
+    def calculate_total(self):
+       
+        total = sum(self.items.values())
+        print(f"Total Amount: ₹{total}")
+        return total
+
+
+cart = ShoppingCart()
+
+
     
-    def __str__(self):
-        return f"Employee (Name: {self.name} , Age: {self.age} , Salary: ${self.salary})"
-
-try:
-    empData= Employee(name="sam",age=19,salary=34344)
-    print(empData)
-
-except EmptyNameError as e:
-    print(f"Name Error {e}")
-except InvalidAgeError as e:
-    print(f"Age Error {e}")
-except NegativeSalaryError as e:
-    print(f"Salary Error {e}")
+cart.add_item("Laptop", 50000)
+cart.add_item("Mouse", 1500)
+    
+     
+cart.remove_item("Keyboard")   
+    
+cart.calculate_total()
