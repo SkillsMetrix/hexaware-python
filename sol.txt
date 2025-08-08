@@ -9,5 +9,13 @@ inventory=np.array([
     (104,'Monitor', 1200.0,20),
     (105,'keyboard', 1000.0,80),
 ],dtype=[('id','i4'),('name','U20'),('price','f4'),('stock','i4')])
-print(inventory['name'])
-print(inventory[1])
+#print(inventory['name'])
+#print(inventory[1])
+
+cart=np.array([
+    (101,1),(102,2),(103,3)
+],dtype=[('product_id','i4'),('quantity','i4')])
+
+for item in cart:
+    product=inventory[inventory['id'] == item['product_id']][0]
+    print(f"{product['name']} * {item['quantity']} @ {product['price']} each")
