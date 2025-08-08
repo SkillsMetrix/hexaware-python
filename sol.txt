@@ -19,3 +19,17 @@ cart=np.array([
 for item in cart:
     product=inventory[inventory['id'] == item['product_id']][0]
     print(f"{product['name']} * {item['quantity']} @ {product['price']} each")
+
+total=0.0
+for item in cart:
+    product=inventory[inventory['id'] == item['product_id']][0]
+    total += product['price'] * item['quantity']
+print(f"Total Value  {total}")
+
+for item in cart:
+    idx= np.where(inventory['id'] == item['product_id'])[0][0]
+    inventory['stock'][idx] -= item['quantity']
+print(f"inventory after purchase {inventory[['name','stock']]}")
+
+low_stock=inventory[inventory['stock'] <30]
+print(f"LOw Stock summary: {low_stock}")
