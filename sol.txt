@@ -1,108 +1,14 @@
-from AllException import ItemNotFoundError,EmptyCartError
-class ShoppingCart:
-    def __init__(self):
-        self.items = {}
 
-    def add_item(self, name, price):
-        self.items[name] = price
-        print(f"Added {name} - ₹{price}")
-
-    def remove_item(self, name):
-        if name not in self.items:
-            raise ItemNotFoundError(f"Item not found {name}")
-        del self.items[name]
-        print(f"Removed {name}")
-
-    def calculate_total(self):
-        if  not self.items:
-            raise EmptyCartError("cart is Empty") 
-        total = sum(self.items.values())
-        print(f"Total Amount: ₹{total}")
-        return total
+import numpy as np
+data= np.array([12,34,65,77])
+data2= np.array([11,35,66,90])
+number=2
+result = data + number
+print(result)
 
 
-cart = ShoppingCart()
+result2= data + data2
+print(result2)
 
-try:
-    
-    cart.add_item("Laptop", 50000)
-    cart.add_item("Mouse", 1500)
-    
-     
-    #cart.remove_item("Keyboard")   
-    
-    cart.calculate_total()
-except ItemNotFoundError as e:
-    print("item Error ",e)
-except EmptyCartError as e:
-    print("Cart Error ",e)
-except Exception as e:
-    print("General Error ",e)
-
-finally:
-    print("Operation completed...! Thanks for shopping with us")
-
-
-
-
-
-----------------Example -2 -----------------
-
-
-""" Invalid salary values (non-numeric or missing)
-
-Missing employee name
-
-Empty employee list
-
-Unexpected runtime errors """
-
-from pprint import pprint
-
-# Employee records
-employees = [
-    {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
-    {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
-    {"id": 103, "name": "Charlie", "age": 25, "salary": 55000, "department": "Finance"},
-    {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
-    {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
-]
-
-try:
-    # Validate list is not empty
-    if not employees:
-        raise ValueError("Employee list is empty.")
-
-    # Step 1: Increase salary by 5%
-    updated_salaries = []
-    for emp in employees:
-        if "salary" not in emp or not isinstance(emp["salary"], (int, float)):
-            raise TypeError(f"Invalid or missing salary for employee: {emp}")
-        updated_emp = {**emp, "salary": emp["salary"] * 1.05}
-        updated_salaries.append(updated_emp)
-
-    # Step 2: Filter employees with updated salary > 60000
-    high_paid_employees = list(filter(lambda emp: emp["salary"] > 60000, updated_salaries))
-
-    # Step 3: Print results
-    print(" Employees with updated salary > 60000:")
-    for emp in high_paid_employees:
-        name = emp.get("name", "Unknown")
-        salary = emp.get("salary", 0)
-        print(f"{name} => ₹{salary:.2f}")
-
-except ValueError as ve:
-    print(" Value Error:", ve)
-
-except TypeError as te:
-    print(" Type Error:", te)
-
-except KeyError as ke:
-    print(" Key Error: Missing key", ke)
-
-except Exception as e:
-    print(" Unexpected Error:", e)
-
-finally:
-    print("Salary update operation completed.")
-
+result3= data2 > 50
+print(result3)
