@@ -1,22 +1,15 @@
 import pandas as pd
 from datetime import datetime
 
-# Flights Data
+ 
 flights_data = [
-    {"flight_no": "AI101", "source": "Delhi", "destination": "Mumbai", "date": "2025-08-15", "available_seats": 120,
-     "price": 5000},
-    {"flight_no": "AI102", "source": "Mumbai", "destination": "Delhi", "date": "2025-08-15", "available_seats": 100,
-     "price": 5200},
-    {"flight_no": "AI201", "source": "Delhi", "destination": "Bengaluru", "date": "2025-08-16", "available_seats": 80,
-     "price": 7000},
-    {"flight_no": "AI202", "source": "Bengaluru", "destination": "Delhi", "date": "2025-08-16", "available_seats": 75,
-     "price": 6800},
+    {"flight_no": "AI101", "source": "Delhi", "destination": "Mumbai", "date": "2025-08-15", "available_seats": 120, "price": 5000},
+    {"flight_no": "AI102", "source": "Mumbai", "destination": "Delhi", "date": "2025-08-15", "available_seats": 100, "price": 5200},
+    {"flight_no": "AI201", "source": "Delhi", "destination": "Bengaluru", "date": "2025-09-10", "available_seats": 80, "price": 7000},
+    {"flight_no": "AI202", "source": "Bengaluru", "destination": "Delhi", "date": "2025-09-12", "available_seats": 75, "price": 6800},
 ]
 df_flights = pd.DataFrame(flights_data)
 df_flights['date'] = pd.to_datetime(df_flights['date'])
-
-print("\n=== Flights Data ===")
-print(df_flights)
 
 # Passengers Data
 passengers_data = [
@@ -27,22 +20,17 @@ passengers_data = [
 ]
 df_passengers = pd.DataFrame(passengers_data)
 
-print("\n=== Passengers Data ===")
-print(df_passengers)
-
-# Sales Data (Ticket Purchases)
+# Sales Data
 sales_data = [
     {"sale_id": 1, "passenger_id": 1, "flight_no": "AI101", "tickets": 2},
     {"sale_id": 2, "passenger_id": 2, "flight_no": "AI101", "tickets": 1},
     {"sale_id": 3, "passenger_id": 3, "flight_no": "AI201", "tickets": 3},
     {"sale_id": 4, "passenger_id": 4, "flight_no": "AI102", "tickets": 1},
+    {"sale_id": 5, "passenger_id": 1, "flight_no": "AI202", "tickets": 2},
 ]
 df_sales = pd.DataFrame(sales_data)
 
-print("\n=== Sales Data ===")
-print(df_sales)
-
-# Purchase Data (Company Buys Parts/Services)
+# Purchase Data
 purchase_data = [
     {"purchase_id": 1, "item": "Jet Fuel", "vendor": "BP Aviation", "cost": 200000},
     {"purchase_id": 2, "item": "Aircraft Tyres", "vendor": "Goodyear", "cost": 50000},
@@ -50,30 +38,66 @@ purchase_data = [
 ]
 df_purchase = pd.DataFrame(purchase_data)
 
-print("\n=== Purchase Data ===")
-print(df_purchase)
+ 
+# 2. Merge Data & Calculate Revenue
+ 
+df_sales_report = df_sales.merge(df_flights, on="flight_no", how="left")
+df_sales_report['revenue'] = df_sales_report['tickets'] * df_sales_report['price']
+df_full_sales = df_sales_report.merge(df_passengers, on="passenger_id", how="left")
 
+ 
+# 3. Generate Reports
+ 
+total_revenue = df_full_sales['revenue'].sum()
+top_passengers = df_full_sales.groupby('name')['revenue'].sum().sort_values(ascending=False).reset_index()
+busy_routes = df_full_sales.groupby(['source', 'destination'])['tickets'].sum().sort_values(ascending=False).reset_index()
+total_purchase_cost = df_purchase['cost'].sum()
+profit = total_revenue - total_purchase_cost
 
-print("merge and calculate sales revenue")
+ 
+# 4. Trend Analysis (Monthly & Yearly)
+ 
+df_full_sales['month'] = df_full_sales['date'].dt.to_period('M')
+df_full_sales['year'] = df_full_sales['date'].dt.year
 
-# merge sales with flight prices
-df_sales_report=df_sales.merge(df_flights,on="flight_no",how="left")
-# calculate revenue per sale
-df_sales_report['revenue']=df_sales_report['tickets']* df_sales_report['price']
-print("revenue")
-print(df_sales_report[['sale_id','passenger_id','flight_no','tickets','price','revenue']])
+monthly_trend = df_full_sales.groupby('month').agg(
+    total_tickets=('tickets', 'sum'),
+    total_revenue=('revenue', 'sum')
+).reset_index()
 
-# join with passenger details
-df_full_sales=df_sales_report.merge(df_passengers,on="passenger_id",how="left")
-print(df_full_sales[['name','flight_no','tickets','price','revenue']])
+yearly_trend = df_full_sales.groupby('year').agg(
+    total_tickets=('tickets', 'sum'),
+    total_revenue=('revenue', 'sum')
+).reset_index()
 
-# Report-1 Total Revenue
-tr=df_full_sales['revenue'].sum()
-print(tr)
-#print Top Passengers by Spending
-top_ps=df_full_sales.groupby('name')['revenue'].sum().sort_values(ascending=False)
-print(top_ps)
+ 
+# 5. Save to Excel & CSV
+ 
+excel_filename = "flight_reports.xlsx"
+with pd.ExcelWriter(excel_filename, engine='xlsxwriter') as writer:
+    df_flights.to_excel(writer, sheet_name="Flights", index=False)
+    df_passengers.to_excel(writer, sheet_name="Passengers", index=False)
+    df_sales.to_excel(writer, sheet_name="Sales", index=False)
+    df_purchase.to_excel(writer, sheet_name="Purchases", index=False)
+    df_full_sales.to_excel(writer, sheet_name="Full Sales Report", index=False)
+    top_passengers.to_excel(writer, sheet_name="Top Passengers", index=False)
+    busy_routes.to_excel(writer, sheet_name="Busy Routes", index=False)
+    monthly_trend.to_excel(writer, sheet_name="Monthly Trend", index=False)
+    yearly_trend.to_excel(writer, sheet_name="Yearly Trend", index=False)
 
-# Busy Routes by Ticket Sold
-busy_routes=df_full_sales.groupby(['source','destination'])['tickets'].sum().sort_values(ascending=False)
-print(busy_routes)
+# Save important reports as CSV too
+top_passengers.to_csv("top_passengers.csv", index=False)
+busy_routes.to_csv("busy_routes.csv", index=False)
+monthly_trend.to_csv("monthly_trend.csv", index=False)
+yearly_trend.to_csv("yearly_trend.csv", index=False)
+ 
+# 6. Display Output in Console
+ 
+print("\n Total Revenue:", total_revenue)
+print("\n Top Passengers by Revenue:\n", top_passengers)
+print("\n Busy Routes by Tickets Sold:\n", busy_routes)
+print("\n Monthly Trend:\n", monthly_trend)
+print("\n Yearly Trend:\n", yearly_trend)
+print(f"\n Total Purchase Cost: {total_purchase_cost}")
+print(f"\n Profit: {profit}")
+print("\n Reports saved to 'flight_reports.xlsx' and CSV files.")
