@@ -1,5 +1,6 @@
 import  pandas as pd
 
+
 departments = pd.DataFrame({
     'DeptID': [1, 2, 3],
     'DeptName': ['HR', 'IT', 'Finance'],
@@ -20,3 +21,13 @@ dept_df=pd.read_excel('departments.xlsx',engine='openpyxl')
 # merge the data
 combine_df=pd.merge(emp_df,dept_df,on='DeptID',how='left')
 print(combine_df)
+print("print merged data")
+with pd.ExcelWriter('employees.xlsx',engine="openpyxl") as writer:
+    combine_df.to_excel(writer,sheet_name="EmployeeDetails",index=False)
+    # department wise summary
+    summary=combine_df.groupby('DeptID').agg(
+        Total_Employees=("EmpID","count"),
+        Average_Salary=("Salary","mean")
+    ).reset_index()
+    summary.to_excel(writer,sheet_name="SalaySummary",index=False)
+print("report is ready")
