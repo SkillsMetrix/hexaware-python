@@ -63,6 +63,17 @@ df_sales_report['revenue']=df_sales_report['tickets']* df_sales_report['price']
 print("revenue")
 print(df_sales_report[['sale_id','passenger_id','flight_no','tickets','price','revenue']])
 
+# join with passenger details
+df_full_sales=df_sales_report.merge(df_passengers,on="passenger_id",how="left")
+print(df_full_sales[['name','flight_no','tickets','price','revenue']])
 
+# Report-1 Total Revenue
+tr=df_full_sales['revenue'].sum()
+print(tr)
+#print Top Passengers by Spending
+top_ps=df_full_sales.groupby('name')['revenue'].sum().sort_values(ascending=False)
+print(top_ps)
 
-
+# Busy Routes by Ticket Sold
+busy_routes=df_full_sales.groupby(['source','destination'])['tickets'].sum().sort_values(ascending=False)
+print(busy_routes)
