@@ -60,3 +60,6 @@ emp_with_dept=pd.merge(employees,departments, on='DeptID',how='left')
 # current_year=pd.Timestamp.now().year
 # emp_with_dept['TenureYears']= current_year - emp_with_dept['JoiningYear']
 # print(emp_with_dept[['Name','JoiningYear','TenureYears']])
+print("Custom Logic")
+emp_with_dept['Bonus']=emp_with_dept['Salary'].apply(lambda sal: sal*0.15)
+print(emp_with_dept[['Name','Salary','Bonus']])
