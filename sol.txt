@@ -1,12 +1,51 @@
 import pandas as pd
-import numpy as np
+from datetime import datetime
 
-rows = 1_000_000  # 1 million rows
-df = pd.DataFrame({
-    'emp_id': np.arange(1, rows + 1),
-    'name': [f'Employee{i}' for i in range(rows)],
-    'salary': np.random.randint(30000, 120000, rows),
-    'department': np.random.choice(['HR', 'IT', 'Finance', 'Sales'], rows)
-})
-df.to_csv('large_file.csv', index=False)
-print("Dummy large file created.")
+ 
+# Flights Data
+flights_data = [
+    {"flight_no": "AI101", "source": "Delhi", "destination": "Mumbai", "date": "2025-08-15", "available_seats": 120, "price": 5000},
+    {"flight_no": "AI102", "source": "Mumbai", "destination": "Delhi", "date": "2025-08-15", "available_seats": 100, "price": 5200},
+    {"flight_no": "AI201", "source": "Delhi", "destination": "Bengaluru", "date": "2025-08-16", "available_seats": 80, "price": 7000},
+    {"flight_no": "AI202", "source": "Bengaluru", "destination": "Delhi", "date": "2025-08-16", "available_seats": 75, "price": 6800},
+]
+df_flights = pd.DataFrame(flights_data)
+df_flights['date'] = pd.to_datetime(df_flights['date'])  
+
+print("\n=== Flights Data ===")
+print(df_flights)
+
+# Passengers Data
+passengers_data = [
+    {"passenger_id": 1, "name": "Alice", "contact": "alice@example.com"},
+    {"passenger_id": 2, "name": "Bob", "contact": "bob@example.com"},
+    {"passenger_id": 3, "name": "Charlie", "contact": "charlie@example.com"},
+    {"passenger_id": 4, "name": "David", "contact": "david@example.com"},
+]
+df_passengers = pd.DataFrame(passengers_data)
+
+print("\n=== Passengers Data ===")
+print(df_passengers)
+
+# Sales Data (Ticket Purchases)
+sales_data = [
+    {"sale_id": 1, "passenger_id": 1, "flight_no": "AI101", "tickets": 2},
+    {"sale_id": 2, "passenger_id": 2, "flight_no": "AI101", "tickets": 1},
+    {"sale_id": 3, "passenger_id": 3, "flight_no": "AI201", "tickets": 3},
+    {"sale_id": 4, "passenger_id": 4, "flight_no": "AI102", "tickets": 1},
+]
+df_sales = pd.DataFrame(sales_data)
+
+print("\n=== Sales Data ===")
+print(df_sales)
+
+# Purchase Data (Company Buys Parts/Services)
+purchase_data = [
+    {"purchase_id": 1, "item": "Jet Fuel", "vendor": "BP Aviation", "cost": 200000},
+    {"purchase_id": 2, "item": "Aircraft Tyres", "vendor": "Goodyear", "cost": 50000},
+    {"purchase_id": 3, "item": "Catering Service", "vendor": "SkyCater", "cost": 30000},
+]
+df_purchase = pd.DataFrame(purchase_data)
+
+print("\n=== Purchase Data ===")
+print(df_purchase)
