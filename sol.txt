@@ -1,6 +1,7 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import tight_layout
 
- 
 employees = pd.DataFrame({
     'EmpID': [101, 102, 103, 104, 105, 106],
     'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva', 'Frank'],
@@ -17,49 +18,79 @@ departments = pd.DataFrame({
 })
 
 
-#print("Forst Records", employees.head(2))
-#print("Forst Records", employees.tail(2))
-# print("Data Info")
-# print(employees.info())
-# print("\n Summary")
-# print(employees.describe(include='all'))
-#print(employees[['Name','Salary']])
+print("Forst Records", employees.head(2))
+print("Forst Records", employees.tail(2))
+print("Data Info")
+print(employees.info())
+print("\n Summary")
+print(employees.describe(include='all'))
+print(employees[['Name','Salary']])
 
-# high_earners= employees[employees['Salary']> 70000]
-# print('High Income ', high_earners) 
+high_earners= employees[employees['Salary']> 70000]
+print('High Income ', high_earners) 
 
-# sorted_employees=employees.sort_values(by='Salary',ascending=False)
-# print("Sorted Salaries ", sorted_employees)
+sorted_employees=employees.sort_values(by='Salary',ascending=False)
+print("Sorted Salaries ", sorted_employees)
 
 emp_with_dept=pd.merge(employees,departments, on='DeptID',how='left')
-#print(emp_with_dept)
+print("emp_with_dept")
 #group and aggregate
-# print("Average salaray by Department")
-# avg_salary_by_Dept=emp_with_dept.groupby('DeptName')['Salary'].mean().reset_index()
-# print(avg_salary_by_Dept)
-# print("number of emp by departments")
-# emp_count=emp_with_dept['DeptName'].value_counts().reset_index(name='EmployeeCount')
-# emp_count.columns=['DeptName','EmployeeCount']
-# print(emp_count)
-# print("missing value before filling")
-# print(emp_with_dept.isnull().sum())
-# print("fill missing salary")
-# emp_with_dept['Salary'].fillna(emp_with_dept['Salary'].mean(),inplace=True)
-# print("fill missing Dept")
-# emp_with_dept['DeptName'].fillna('Unknown',inplace=True)
-# print(emp_with_dept.isnull().sum())
-# print('Add Additional Columns')
-# emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
-# emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.month
-# print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
-# print('Add Additional Columns')
-# emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
-# emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.strftime('%b')
-# print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
-# print("Tenure Employee")
-# current_year=pd.Timestamp.now().year
-# emp_with_dept['TenureYears']= current_year - emp_with_dept['JoiningYear']
-# print(emp_with_dept[['Name','JoiningYear','TenureYears']])
+print("Average salaray by Department")
+avg_salary_by_Dept=emp_with_dept.groupby('DeptName')['Salary'].mean().reset_index()
+print(avg_salary_by_Dept)
+print("number of emp by departments")
+emp_count=emp_with_dept['DeptName'].value_counts().reset_index(name='EmployeeCount')
+emp_count.columns=['DeptName','EmployeeCount']
+print(emp_count)
+print("missing value before filling")
+print(emp_with_dept.isnull().sum())
+print("fill missing salary")
+emp_with_dept['Salary'].fillna(emp_with_dept['Salary'].mean(),inplace=True)
+print("fill missing Dept")
+emp_with_dept['DeptName'].fillna('Unknown',inplace=True)
+print(emp_with_dept.isnull().sum())
+print('Add Additional Columns')
+emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
+emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.month
+print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
+print('Add Additional Columns')
+emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
+emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.strftime('%b')
+print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
+print("Tenure Employee")
+current_year=pd.Timestamp.now().year
+emp_with_dept['TenureYears']= current_year - emp_with_dept['JoiningYear']
+print(emp_with_dept[['Name','JoiningYear','TenureYears']])
 print("Custom Logic")
 emp_with_dept['Bonus']=emp_with_dept['Salary'].apply(lambda sal: sal*0.15)
 print(emp_with_dept[['Name','Salary','Bonus']])
+
+print("category wise")
+emp_with_dept['Seniority']=emp_with_dept['TenureYears'].apply(lambda y:'Senior' if y > 5 else 'Junior')
+print(emp_with_dept[['Name','TenureYears','Seniority']])
+
+print("Create Pivot Table")
+pivot_salary=pd.pivot_table(
+    emp_with_dept,
+    values='Salary',
+    index='DeptName',
+    columns='JoiningYear',
+    aggfunc='mean'
+)
+print(pivot_salary)
+
+emp_with_dept.to_csv('emp_with_dept.csv',index=False)
+print("Exported Data ")
+
+print("Visual Data")
+avg_salary_by_Dept.plot(
+    x='DeptName',
+    y='Salary',
+    kind='bar',
+    title='Average Salary by Dept',
+    legend=False
+)
+plt.xlabel('DeptName')
+plt.ylabel('Salary')
+plt,tight_layout()
+plt.show()
