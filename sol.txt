@@ -34,10 +34,29 @@ departments = pd.DataFrame({
 emp_with_dept=pd.merge(employees,departments, on='DeptID',how='left')
 #print(emp_with_dept)
 #group and aggregate
-print("Average salaray by Department")
-avg_salary_by_Dept=emp_with_dept.groupby('DeptName')['Salary'].mean().reset_index()
-print(avg_salary_by_Dept)
-print("number of emp by departments")
-emp_count=emp_with_dept['DeptName'].value_counts().reset_index(name='EmployeeCount')
-emp_count.columns=['DeptName','EmployeeCount']
-print(emp_count)
+# print("Average salaray by Department")
+# avg_salary_by_Dept=emp_with_dept.groupby('DeptName')['Salary'].mean().reset_index()
+# print(avg_salary_by_Dept)
+# print("number of emp by departments")
+# emp_count=emp_with_dept['DeptName'].value_counts().reset_index(name='EmployeeCount')
+# emp_count.columns=['DeptName','EmployeeCount']
+# print(emp_count)
+# print("missing value before filling")
+# print(emp_with_dept.isnull().sum())
+# print("fill missing salary")
+# emp_with_dept['Salary'].fillna(emp_with_dept['Salary'].mean(),inplace=True)
+# print("fill missing Dept")
+# emp_with_dept['DeptName'].fillna('Unknown',inplace=True)
+# print(emp_with_dept.isnull().sum())
+# print('Add Additional Columns')
+# emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
+# emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.month
+# print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
+# print('Add Additional Columns')
+# emp_with_dept['JoiningYear']=emp_with_dept['JoiningDate'].dt.year
+# emp_with_dept['JoiningMonth']=emp_with_dept['JoiningDate'].dt.strftime('%b')
+# print(emp_with_dept[['Name','JoiningDate','JoiningYear','JoiningMonth']])
+# print("Tenure Employee")
+# current_year=pd.Timestamp.now().year
+# emp_with_dept['TenureYears']= current_year - emp_with_dept['JoiningYear']
+# print(emp_with_dept[['Name','JoiningYear','TenureYears']])
