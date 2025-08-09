@@ -15,3 +15,29 @@ departments = pd.DataFrame({
     'DeptName': ['HR', 'IT', 'Finance'],
     'Location': ['Mumbai', 'Pune', 'Delhi']
 })
+
+
+#print("Forst Records", employees.head(2))
+#print("Forst Records", employees.tail(2))
+# print("Data Info")
+# print(employees.info())
+# print("\n Summary")
+# print(employees.describe(include='all'))
+#print(employees[['Name','Salary']])
+
+# high_earners= employees[employees['Salary']> 70000]
+# print('High Income ', high_earners) 
+
+# sorted_employees=employees.sort_values(by='Salary',ascending=False)
+# print("Sorted Salaries ", sorted_employees)
+
+emp_with_dept=pd.merge(employees,departments, on='DeptID',how='left')
+#print(emp_with_dept)
+#group and aggregate
+print("Average salaray by Department")
+avg_salary_by_Dept=emp_with_dept.groupby('DeptName')['Salary'].mean().reset_index()
+print(avg_salary_by_Dept)
+print("number of emp by departments")
+emp_count=emp_with_dept['DeptName'].value_counts().reset_index(name='EmployeeCount')
+emp_count.columns=['DeptName','EmployeeCount']
+print(emp_count)
