@@ -1,16 +1,19 @@
 import pandas as pd
 from datetime import datetime
 
- 
 # Flights Data
 flights_data = [
-    {"flight_no": "AI101", "source": "Delhi", "destination": "Mumbai", "date": "2025-08-15", "available_seats": 120, "price": 5000},
-    {"flight_no": "AI102", "source": "Mumbai", "destination": "Delhi", "date": "2025-08-15", "available_seats": 100, "price": 5200},
-    {"flight_no": "AI201", "source": "Delhi", "destination": "Bengaluru", "date": "2025-08-16", "available_seats": 80, "price": 7000},
-    {"flight_no": "AI202", "source": "Bengaluru", "destination": "Delhi", "date": "2025-08-16", "available_seats": 75, "price": 6800},
+    {"flight_no": "AI101", "source": "Delhi", "destination": "Mumbai", "date": "2025-08-15", "available_seats": 120,
+     "price": 5000},
+    {"flight_no": "AI102", "source": "Mumbai", "destination": "Delhi", "date": "2025-08-15", "available_seats": 100,
+     "price": 5200},
+    {"flight_no": "AI201", "source": "Delhi", "destination": "Bengaluru", "date": "2025-08-16", "available_seats": 80,
+     "price": 7000},
+    {"flight_no": "AI202", "source": "Bengaluru", "destination": "Delhi", "date": "2025-08-16", "available_seats": 75,
+     "price": 6800},
 ]
 df_flights = pd.DataFrame(flights_data)
-df_flights['date'] = pd.to_datetime(df_flights['date'])  
+df_flights['date'] = pd.to_datetime(df_flights['date'])
 
 print("\n=== Flights Data ===")
 print(df_flights)
@@ -49,3 +52,17 @@ df_purchase = pd.DataFrame(purchase_data)
 
 print("\n=== Purchase Data ===")
 print(df_purchase)
+
+
+print("merge and calculate sales revenue")
+
+# merge sales with flight prices
+df_sales_report=df_sales.merge(df_flights,on="flight_no",how="left")
+# calculate revenue per sale
+df_sales_report['revenue']=df_sales_report['tickets']* df_sales_report['price']
+print("revenue")
+print(df_sales_report[['sale_id','passenger_id','flight_no','tickets','price','revenue']])
+
+
+
+
