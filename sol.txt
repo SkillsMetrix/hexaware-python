@@ -34,7 +34,19 @@ def addtocart():
     db.session.commit()
     return jsonify({"message":"added item", "item": new_item.to_dict()}), 201
 
+#read the data
+@app.route("/loadcart",methods=['GET'])
+def loadcart():
+    items= CartItem.query.all()
+    return jsonify([item.to_dict() for item in items]), 200
 
+# load with ID
+@app.route("/cart/<int:item_id>",methods=['GET'])
+def loadcartwithid(item_id):
+    item=CartItem.query.get(item_id)
+    if not item:
+        return jsonify({"error":"item not found"}), 404
+    return jsonify(item.to_dict()), 200
 
 if __name__=="__main__":
     with app.app_context():
