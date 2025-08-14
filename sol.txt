@@ -1,28 +1,40 @@
 
+import unittest
+from employee import Employee
 
-class Employee:
+class TestEmployee(unittest.TestCase):
 
-    raise_amt= 1.05
+    @classmethod
+    def setUpClass(cls):
+        print('setup class ')
+    @classmethod
+    def tearDownClass(cls):
+        print('teardown class ')
+    #called before every testcase
 
-    def __init__(self,first,last,pay):
-        self.first=first
-        self.last=last
-        self.pay=pay
+    def setUp(self):
+        print('called before')
+        self.emp1= Employee('Corey','schafer',50000)
+        self.emp2= Employee('Sue','Smith',60000)
+    def tearDown(self):
+        print('called after')
+        pass
+
+    def test_email(self):
+        print('testing email')
+        self.assertEqual(self.emp1.email,'Corey.schafer@email.com')
+        self.assertEqual(self.emp2.email,'Sue.Smith@email.com')
     
-    @property
-    def email(self):
-        return '{}.{}@email.com'.format(self.first,self.last)
-    @property
-    def fullname(self):
-        return '{} {}'.format(self.first,self.last)
+    def test_fullname(self):
+         print('testing fullname')
+         emp1= Employee('Corey','schafer',50000)
+         self.assertEqual(emp1.fullname,'Corey schafer')
 
-    def apply_raise(self):
-        self.pay= int(self.pay * self.raise_amt)
+    def test_apply_raise(self):
+         print('testing salary')
+         emp1= Employee('Corey','schafer',50000)
+         emp1.apply_raise()
+         self.assertEqual(emp1.pay,52500)
 
-emp1= Employee('sam','Altmon',5000)
-
-print(emp1.email)
-print(emp1.fullname)
-
-emp1.apply_raise()
-print(emp1.pay)
+if __name__ == '__main__':
+    unittest.main()
