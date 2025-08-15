@@ -1,40 +1,119 @@
+"""
+Production Ready ETL
+- create/reads Sqlite transactions table (readymade data)
+- Exports table in CSV
+- Reads local customer CSV
+- Inner Joins on Account Number
+- Applies transformations and currency conversions
+- Aggregate by Branch Code and transactions Type
+- writes final csv report
+- Robust logging,validation,error Handling
+"""
+from pathlib import Path
+import sqlite3
+import pandas as pd
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+from typing import Dict,Tuple
 
-import unittest
-from employee import Employee
+# ------ App Configuration----------
+BASE_DIR= Path("temp")
+DB_FILE=BASE_DIR / "banking.db"
+DB_EXPORT_CSV=BASE_DIR / "db_export.csv"
+CUSTOMER_CSV=BASE_DIR / "customer_details.csv"
+FINAL_REPORT_CSV=BASE_DIR / "final_report.csv"
+LOG_FILE=BASE_DIR / "banking_etl.log"
 
-class TestEmployee(unittest.TestCase):
+CONVERSION_RATES: Dict[str, float] = {
+    "USD": 1.000,
+    "EUR": 1.08,
+    "INR": 0.011
 
-    @classmethod
-    def setUpClass(cls):
-        print('setup class ')
-    @classmethod
-    def tearDownClass(cls):
-        print('teardown class ')
-    #called before every testcase
+}
+REQUIRED_DB_COLUMNS={
+    "Account_Number","Customer_Name","Branch_Code","Transaction_Type","Transaction_Date",
+    "Transaction_Amount","Balance","Currency","Account_Status"
+}
+#-------- setup logs----
+def setup_logging(log_file: Path) -> None:
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    def setUp(self):
-        print('called before')
-        self.emp1= Employee('Corey','schafer',50000)
-        self.emp2= Employee('Sue','Smith',60000)
-    def tearDown(self):
-        print('called after')
-        pass
+    # console Handlers
+    ch=logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(fmt)
+    logger.addHandler(ch)
 
-    def test_email(self):
-        print('testing email')
-        self.assertEqual(self.emp1.email,'Corey.schafer@email.com')
-        self.assertEqual(self.emp2.email,'Sue.Smith@email.com')
-    
-    def test_fullname(self):
-         print('testing fullname')
-         emp1= Employee('Corey','schafer',50000)
-         self.assertEqual(emp1.fullname,'Corey schafer')
+    # Rotating File Handler
+    fh=RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(fmt)
+    logger.addHandler(fh)
+logger=logging.getLogger(__name__)
 
-    def test_apply_raise(self):
-         print('testing salary')
-         emp1= Employee('Corey','schafer',50000)
-         emp1.apply_raise()
-         self.assertEqual(emp1.pay,52500)
+#------ DB App---------------
+def init_sqlite_with_dummy_data(db_path: Path) -> None:
+    """
+    Create SQLite DB with dummy data and insert transaction record if table is empty
 
-if __name__ == '__main__':
-    unittest.main()
+    """
+    logger.debug("Initializing SQLite DB at %s", db_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur= conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS transactions (
+                    Account_Number INTEGER,
+                    Customer_Name TEXT,
+                    Branch_Code TEXT,
+                    Transaction_Date TEXT,
+                    Transaction_Type TEXT,
+                    Transaction_Amount REAL,
+                    Balance REAL,
+                    Currency TEXT,
+                    Account_Status TEXT
+                )    
+            """)
+            # Insert only if Empty
+            cur.execute("select count(1) from transactions")
+            count= cur.fetchone()[0]
+            if count == 0:
+                logger.info("Inserting dummy data into transaction table")
+                transactions_data =[
+                    (1001,'Daniel White','B001','2024-01-15','Deposit',5000,15000,'usd','Active'),
+                    (1002,'alice Smith','B002','2024-02-10','Withdraw',2000,8000,'inr','Active'),
+                    (1003, 'Bob Johnson', 'B003', '2024-02-22', 'Deposit', 3000, 9000, 'usd', 'Closed'),
+                    (1004, 'Clara Osward', 'B004', '2024-03-05', 'Deposit', 4000, 5000, 'eur', 'Active'),
+                    (1005, 'Amit verma', 'B005', '2024-03-11', 'Withdraw', 3000, 92000, 'inr', 'Active'),
+                ]
+                cur.executemany("""
+                    INSERT INTO transactions
+                    (Account_Number,Customer_Name,Branch_Code,Transaction_Date,Transaction_Type,
+                     Transaction_Amount,Balance,Currency,Account_Status)
+                     Values (?,?,?,?,?,?,?,?,?)
+                """,transactions_data)
+                conn.commit()
+                logger.debug("Dummy Data Commited to DB")
+            else:
+                logger.info("Transaction record already Populated (%d rows)", count)
+    except sqlite3.Error as e:
+        logger.exception("Error while connecting to SQLite database: %s", e)
+        raise
+
+def run():
+    try:
+        init_sqlite_with_dummy_data(DB_FILE)
+    except Exception as exc:
+        logger.exception("Error while connecting to SQLite database: %s", exc)
+    return  1
+if __name__ == "__main__":
+    exit_code=(run())
+    sys.exit(exit_code)
+
+
+
