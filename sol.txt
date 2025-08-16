@@ -100,3 +100,38 @@ def create_customer_details_csv():
         logger.error(f"Error creating customer details to csc.{e}")
         raise
 
+
+-----import pandas as pd
+from config import DB_EXPORT_PATH, CUSTOMER_DETAILS_PATH, CONVERSION_RATES
+from logger import logger
+
+def join_and_transform():
+    try:
+        df_db = pd.read_csv(DB_EXPORT_PATH)
+        df_local = pd.read_csv(CUSTOMER_DETAILS_PATH)
+
+        # Inner join
+        df_joined = pd.merge(df_db, df_local, on='Account_Number', how='inner')
+
+        # Transformations
+        df_joined['Customer_Name'] = df_joined['Customer_Name'].str.title()
+        df_joined['Transaction_Date'] = pd.to_datetime(df_joined['Transaction_Date'])
+        df_joined['Transaction_Year'] = df_joined['Transaction_Date'].dt.year
+        df_joined['Transaction_Month'] = df_joined['Transaction_Date'].dt.strftime('%b')
+        df_joined['Currency'] = df_joined['Currency'].str.upper()
+
+        # Filter active accounts
+        df_active = df_joined[df_joined['Account_Status'] != 'Closed']
+
+        # Currency conversion
+        df_active['Transaction_Amount_USD'] = df_active.apply(
+            lambda row: row['Transaction_Amount'] * CONVERSION_RATES.get(row['Currency'], 1),
+            axis=1
+        )
+
+        logger.info("Data joined and transformed successfully.")
+        return df_active
+    except Exception as e:
+        logger.error(f"Error in joining and transforming data: {e}")
+        raise
+
