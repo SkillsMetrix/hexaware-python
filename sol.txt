@@ -1,137 +1,118 @@
-
-import sqlite3
-import pandas as pd
-from config import DB_PATH, DB_EXPORT_PATH
-from logger import logger
-
-def create_database():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS transactions (
-                Account_Number INTEGER,
-                Customer_Name TEXT,
-                Branch_Code TEXT,
-                Transaction_Date TEXT,
-                Transaction_Type TEXT,
-                Transaction_Amount REAL,
-                Balance REAL,
-                Currency TEXT,
-                Account_Status TEXT
-            )
-        """)
-
-        transactions_data = [
-            (1001, 'john DOE', 'B001', '2024-01-15', 'Deposit', 5000, 15000, 'usd', 'Active'),
-            (1002, 'alice SMITH', 'B002', '2024-02-10', 'Withdrawal', 2000, 8000, 'inr', 'Active'),
-            (1003, 'Bob Johnson', 'B001', '2024-02-22', 'Deposit', 3000, 12000, 'usd', 'Closed'),
-            (1004, 'Clara Oswald', 'B003', '2024-03-05', 'Deposit', 7000, 20000, 'eur', 'Active'),
-            (1005, 'Daniel White', 'B002', '2024-03-12', 'Withdrawal', 1500, 6500, 'usd', 'Active')
-        ]
-        cursor.executemany("""
-            INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, transactions_data)
-
-        conn.commit()
-        conn.close()
-        logger.info("Database created successfully.")
-    except Exception as e:
-        logger.error(f"Error creating database: {e}")
-        raise
-
-def export_db_to_csv():
-   try:
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    df= pd.read_sql_query("SELECT * FROM transactions", conn)
-    df.to_csv(DB_EXPORT_PATH, index=False)
-    conn.close()
-    logger.info(f"Database exported successfully to CSV {DB_EXPORT_PATH}")
-    return df
-   except Exception as e:
-       logger.error(f"Error exporting database: {e}")
-       raise
----------
-
 import os
-from datetime import datetime
 
-# Directories
-TEMP_DIR ="temp"
-LOG_DIR = "logs"
-os.makedirs(TEMP_DIR, exist_ok=True)
-os.makedirs(LOG_DIR, exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Paths
-DB_PATH=os.path.join(TEMP_DIR, "banking.db")
-DB_EXPORT_PATH=os.path.join(TEMP_DIR, "db_export.csv")
-CUSTOMER_DETAILS_PATH=os.path.join(TEMP_DIR, "customer_details.csv")
-FINAL_REPORT_PATH=os.path.join(TEMP_DIR, "final_report.csv")
+DB_EXPORT_PATH = os.path.join(BASE_DIR, "db_export.csv")
+FIXED_WIDTH_PATH = os.path.join(BASE_DIR, "customer_details.fwf")
+JOIN_DATA_PATH = os.path.join(BASE_DIR, "join_data.csv")
+FINAL_REPORT_PATH = os.path.join(BASE_DIR, "final_report.csv")
 
-# Logging
-LOG_FILE=os.path.join(LOG_DIR, f"banking_pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+# Fixed-width column widths (adjust based on actual data)
+FWF_WIDTHS = [15, 30, 10, 10, 15, 15, 15, 10, 15]
+FWF_COLUMNS = [
+    "Account_Number",
+    "Customer_Name",
+    "Branch_Code",
+    "Transaction_Date",
+    "Transaction_Type",
+    "Transaction_Amount",
+    "Balance",
+    "Currency",
+    "Account_Status",
+]
 
-# Currency Conversion
-CONVERSION_RATES={
-    "USD": 1.0,
-    "INR": 0.012,
-    "EUR": 1.08,
-}
----------
+
+----
 
 import pandas as pd
-from config import CUSTOMER_DETAILS_PATH
-from logger import logger
+from .config import FWF_WIDTHS, FWF_COLUMNS, FIXED_WIDTH_PATH
 
-def create_customer_details_csv():
-    try:
-        customer_details_data={
-                'Account_Number': [1001, 1002, 1003, 1004, 1005, 1006],
-                'Customer_Email': ['john@example.com', 'alice@example.com', 'bob@example.com',
-                                   'clara@example.com', 'daniel@example.com', 'extra@example.com'],
-                'Customer_Phone': ['111-111-1111', '222-222-2222', '333-333-3333',
-                                   '444-444-4444', '555-555-5555', '666-666-6666']
-        }
-        df_local=pd.DataFrame(customer_details_data)
-        df_local.to_csv(CUSTOMER_DETAILS_PATH,index=False)
-        logger.info(f'CUSTOMER_DETAILS_CSV created.{CUSTOMER_DETAILS_PATH}')
-    except Exception as e:
-        logger.error(f"Error creating customer details to csc.{e}")
-        raise
+def read_fixed_width_file():
+    """Reads a fixed-width format file into a DataFrame."""
+    df = pd.read_fwf(
+        FIXED_WIDTH_PATH,
+        widths=FWF_WIDTHS,
+        names=FWF_COLUMNS,
+        dtype=str
+    )
+    return df
 
 
------import pandas as pd
-from config import DB_EXPORT_PATH, CUSTOMER_DETAILS_PATH, CONVERSION_RATES
-from logger import logger
+-------
 
-def join_and_transform():
-    try:
-        df_db = pd.read_csv(DB_EXPORT_PATH)
-        df_local = pd.read_csv(CUSTOMER_DETAILS_PATH)
+import pandas as pd
+from .config import FWF_WIDTHS, FWF_COLUMNS, FIXED_WIDTH_PATH
 
-        # Inner join
-        df_joined = pd.merge(df_db, df_local, on='Account_Number', how='inner')
+def read_fixed_width_file():
+    """Reads a fixed-width format file into a DataFrame."""
+    df = pd.read_fwf(
+        FIXED_WIDTH_PATH,
+        widths=FWF_WIDTHS,
+        names=FWF_COLUMNS,
+        dtype=str
+    )
+    return df
 
-        # Transformations
-        df_joined['Customer_Name'] = df_joined['Customer_Name'].str.title()
-        df_joined['Transaction_Date'] = pd.to_datetime(df_joined['Transaction_Date'])
-        df_joined['Transaction_Year'] = df_joined['Transaction_Date'].dt.year
-        df_joined['Transaction_Month'] = df_joined['Transaction_Date'].dt.strftime('%b')
-        df_joined['Currency'] = df_joined['Currency'].str.upper()
 
-        # Filter active accounts
-        df_active = df_joined[df_joined['Account_Status'] != 'Closed']
+------
 
-        # Currency conversion
-        df_active['Transaction_Amount_USD'] = df_active.apply(
-            lambda row: row['Transaction_Amount'] * CONVERSION_RATES.get(row['Currency'], 1),
-            axis=1
-        )
+import pandas as pd
+from .config import DB_EXPORT_PATH
+from .file_utils import read_fixed_width_file
 
-        logger.info("Data joined and transformed successfully.")
-        return df_active
-    except Exception as e:
-        logger.error(f"Error in joining and transforming data: {e}")
-        raise
+def join_and_transform_fwf():
+    """Reads DB CSV & fixed-width file, joins, cleans, and aggregates."""
+    db_df = pd.read_csv(DB_EXPORT_PATH)
+    fwf_df = read_fixed_width_file()
+
+    # Convert numeric columns
+    fwf_df["Transaction_Amount"] = pd.to_numeric(fwf_df["Transaction_Amount"], errors="coerce")
+    fwf_df["Balance"] = pd.to_numeric(fwf_df["Balance"], errors="coerce")
+
+    # Clean Customer_Name (strip + remove unwanted chars)
+    fwf_df["Customer_Name"] = (
+        fwf_df["Customer_Name"]
+        .str.strip()
+        .str.replace(r"[^a-zA-Z\s]", "", regex=True)
+        .str.title()
+    )
+
+    # Format Transaction_Date
+    fwf_df["Transaction_Date"] = pd.to_datetime(
+        fwf_df["Transaction_Date"], errors="coerce"
+    ).dt.strftime("%Y-%m-%d")
+
+    # Normalize Transaction_Type
+    mapping = {
+        "dep": "Deposit",
+        "deposit": "Deposit",
+        "wd": "Withdrawal",
+        "withdraw": "Withdrawal",
+        "tr": "Transfer",
+        "transfer": "Transfer"
+    }
+    fwf_df["Transaction_Type"] = (
+        fwf_df["Transaction_Type"].str.lower().map(mapping).fillna("Other")
+    )
+
+    # Join on Account_Number
+    df = pd.merge(db_df, fwf_df, on="Account_Number", how="inner")
+
+    # Group by Currency
+    grouped_df = df.groupby("Currency")["Transaction_Amount"].sum().reset_index()
+
+    return df, grouped_df
+
+
+
+-----
+
+from .config import JOIN_DATA_PATH, FINAL_REPORT_PATH
+
+def save_fwf_reports(joined_df, grouped_df):
+    """Save the joined data and grouped summary to CSV."""
+    joined_df.to_csv(JOIN_DATA_PATH, index=False)
+    grouped_df.to_csv(FINAL_REPORT_PATH, index=False)
+
+-----
 
