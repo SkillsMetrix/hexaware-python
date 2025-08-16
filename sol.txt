@@ -80,3 +80,23 @@ CONVERSION_RATES={
 }
 ---------
 
+import pandas as pd
+from config import CUSTOMER_DETAILS_PATH
+from logger import logger
+
+def create_customer_details_csv():
+    try:
+        customer_details_data={
+                'Account_Number': [1001, 1002, 1003, 1004, 1005, 1006],
+                'Customer_Email': ['john@example.com', 'alice@example.com', 'bob@example.com',
+                                   'clara@example.com', 'daniel@example.com', 'extra@example.com'],
+                'Customer_Phone': ['111-111-1111', '222-222-2222', '333-333-3333',
+                                   '444-444-4444', '555-555-5555', '666-666-6666']
+        }
+        df_local=pd.DataFrame(customer_details_data)
+        df_local.to_csv(CUSTOMER_DETAILS_PATH,index=False)
+        logger.info(f'CUSTOMER_DETAILS_CSV created.{CUSTOMER_DETAILS_PATH}')
+    except Exception as e:
+        logger.error(f"Error creating customer details to csc.{e}")
+        raise
+
