@@ -17,6 +17,7 @@ from logging.handlers import RotatingFileHandler
 import sys
 from typing import Dict,Tuple
 
+
 # ------ App Configuration----------
 BASE_DIR= Path("temp")
 DB_FILE=BASE_DIR / "banking.db"
@@ -105,9 +106,94 @@ def init_sqlite_with_dummy_data(db_path: Path) -> None:
         logger.exception("Error while connecting to SQLite database: %s", e)
         raise
 
+def export_table_to_csv(db_path:Path,csv_path: Path, table_name:str='transactions') -> None:
+    """
+    Read Date from table abd write to CSV
+    """
+    logger.debug("Exporting table %s from DB %s to CSV at %s", table_name,db_path,csv_path)
+    try:
+        with sqlite3.connect(str(db_path)) as conn:
+            df= pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
+        if not REQUIRED_DB_COLUMNS.issubset(df.columns):
+            missing= REQUIRED_DB_COLUMNS - set(df.columns)
+            raise ValueError(f"Missing columns: {missing}")
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(csv_path, index=False)
+        logger.info("Exported %d rows to %s", len(df), csv_path)
+    except Exception:
+        logger.exception("FAiled to export DB to CSV")
+        raise
+#---- CSV & Transformation Utilities
+def read_csv_validation(path: Path, required_columns: set) -> pd.DataFrame:
+    logger.debug("Reading CSV %s", path)
+    if not path.exists():
+        msg= f"CSV file not found: {path}"
+        logger.error(msg)
+        raise FileNotFoundError(msg)
+
+    df= pd.read_csv(path)
+    logger.debug("Loaded %d rows %s", len(df),path)
+    missing=required_columns - set(df.columns)
+    if missing:
+        msg= f"CSV {path} is missing required columns: {missing}"
+        logger.error(msg)
+        raise ValueError(msg)
+    return df
+def transform_and_aggregate(df_db: pd.DataFrame, df_cust: pd.DataFrame,
+                            conversion_rates: dict[str, float])-> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Performs joins,transformations,filter and aggregation
+    Returns (joined_df,report_df)
+   """
+    logger.info("Joining DB and customer data on Account_Number")
+    df= pd.merge(df_db,df_cust,on='Account_Number',how='inner',validate='one_to_one')
+    logger.debug("Joined DF shapes: %s", df.shape)
+
+    # standardize the name
+    logger.debug("Standardizing Customer_Name to title case")
+    df['Customer_Name']=df['Customer_Name'].astype(str).str.title()
+
+    # Transaction date -> datetime,extract year/month
+    logger.debug("Parsing Transaction_Date and extracting year/month")
+    df['Transaction_Date']=pd.to_datetime(df['Transaction_Date'],errors='coerce')
+    if df['Transaction_Date'].isnull().any():
+        bad_rows=df[df['Transaction_Date'].isnull()]
+        logger.warning("Some Transaction_Date rows could not be parsed, Example rows: %s ",bad_rows.head().to_dict(orient='records'))
+        df= df.dropna(subset=['Transaction_Date'])
+        logger.debug("Dropped row with invalid Transaction_Date column")
+    df['Transaction_Year']= df['Transaction_Date'].dt.year
+    df['Transaction_Month']= df['Transaction_Date'].dt.strftime('%b')
+
+    # currency normalization
+    logger.debug("Normalizing currency to uppercase")
+    df['Currency']=df['Currency'].astype(str).str.upper()
+
+    # filter out closed accounts
+    logger.info('filter out closed accounts with account_status=closed')
+    df_active= df[df['Account_Status'].str.strip().str.upper() != 'CLOSED'].copy()
+    logger.debug("Active DF shape: %s",df_active.shape)
+
+    # convert to USD using conversion rates
+
+    def convert_to_usd(row):
+        cur=str(row['Currency']).upper()
+        rate= conversion_rates.get(cur)
+        if rate is None:
+            logger.warning("Unknown currency '%s'", cur)
+            rate=1.0
+        return  row['Transaction_Amount']*rate
+
+    logger.debug('calculating Transaction Amount')
+    df_active['Transaction_Amount_USD']=df_active.apply(convert_to_usd,axis=1)
 def run():
     try:
+
+        setup_logging(LOG_FILE)
+        logger.info(f"Logging to {LOG_FILE}")
+        # step-1 initialize the db with dummy data
         init_sqlite_with_dummy_data(DB_FILE)
+        # export db to csv
+        export_table_to_csv(DB_FILE,DB_EXPORT_CSV)
     except Exception as exc:
         logger.exception("Error while connecting to SQLite database: %s", exc)
     return  1
