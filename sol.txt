@@ -2,7 +2,7 @@
 """
 
 
-Production-ready ETL example:
+ 
 - Creates/reads a SQLite transactions table (dummy data)
 - Exports table as CSV
 - Reads local customer CSV
