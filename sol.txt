@@ -1,7 +1,6 @@
 
 """
 
-
  
 - Creates/reads a SQLite transactions table (dummy data)
 - Exports table as CSV
