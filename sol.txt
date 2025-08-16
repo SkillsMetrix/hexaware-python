@@ -1,73 +1,81 @@
+
 """
-Production Ready ETL
-- create/reads Sqlite transactions table (readymade data)
-- Exports table in CSV
+
+
+Production-ready ETL example:
+- Creates/reads a SQLite transactions table (dummy data)
+- Exports table as CSV
 - Reads local customer CSV
-- Inner Joins on Account Number
+- Inner-joins on Account_Number
 - Applies transformations and currency conversions
-- Aggregate by Branch Code and transactions Type
-- writes final csv report
-- Robust logging,validation,error Handling
+- Aggregates by Branch_Code & Transaction_Type
+- Writes final CSV report
+- Robust logging, validation, error handling
 """
+
 from pathlib import Path
 import sqlite3
 import pandas as pd
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
-from typing import Dict,Tuple
+from typing import Dict, Tuple
 
-
-# ------ App Configuration----------
-BASE_DIR= Path("temp")
-DB_FILE=BASE_DIR / "banking.db"
-DB_EXPORT_CSV=BASE_DIR / "db_export.csv"
-CUSTOMER_CSV=BASE_DIR / "customer_details.csv"
-FINAL_REPORT_CSV=BASE_DIR / "final_report.csv"
-LOG_FILE=BASE_DIR / "banking_etl.log"
+# ---------- Configuration ----------
+BASE_DIR = Path("temp")
+DB_FILE = BASE_DIR / "banking.db"
+DB_EXPORT_CSV = BASE_DIR / "db_export.csv"
+CUSTOMER_CSV = BASE_DIR / "customer_details.csv"
+FINAL_REPORT_CSV = BASE_DIR / "final_report.csv"
+LOG_FILE = BASE_DIR / "banking_etl.log"
 
 CONVERSION_RATES: Dict[str, float] = {
-    "USD": 1.000,
+    "USD": 1.0,
+    "INR": 0.012,  # 1 INR = 0.012 USD as example
     "EUR": 1.08,
-    "INR": 0.011
+}
+REQUIRED_DB_COLUMNS = {
+    "Account_Number", "Customer_Name", "Branch_Code", "Transaction_Date",
+    "Transaction_Type", "Transaction_Amount", "Balance", "Currency", "Account_Status"
+}
+REQUIRED_CUSTOMER_COLUMNS = {"Account_Number", "Customer_Email", "Customer_Phone"}
 
-}
-REQUIRED_DB_COLUMNS={
-    "Account_Number","Customer_Name","Branch_Code","Transaction_Type","Transaction_Date",
-    "Transaction_Amount","Balance","Currency","Account_Status"
-}
-REQUIRED_CUSTOMER_COLUMNS={"Account_Number","Customer_Email","Customer_Phone"}
-#-------- setup logs----
+
+# ---------- Logging Setup ----------
 def setup_logging(log_file: Path) -> None:
     log_file.parent.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    # console Handlers
-    ch=logging.StreamHandler(sys.stdout)
+    fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+
+    # Console handler (INFO)
+    ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.INFO)
     ch.setFormatter(fmt)
     logger.addHandler(ch)
 
-    # Rotating File Handler
-    fh=RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3)
+    # Rotating file handler (DEBUG)
+    fh = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=3)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(fmt)
     logger.addHandler(fh)
-logger=logging.getLogger(__name__)
 
-#------ DB App---------------
+
+logger = logging.getLogger(__name__)
+
+
+# ---------- DB Utilities ----------
 def init_sqlite_with_dummy_data(db_path: Path) -> None:
     """
-    Create SQLite DB with dummy data and insert transaction record if table is empty
-
+    Create SQLite DB and insert dummy transaction records if table is empty.
     """
     logger.debug("Initializing SQLite DB at %s", db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
+
     try:
-        with sqlite3.connect(db_path) as conn:
-            cur= conn.cursor()
+        with sqlite3.connect(str(db_path)) as conn:
+            cur = conn.cursor()
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS transactions (
                     Account_Number INTEGER,
@@ -79,149 +87,167 @@ def init_sqlite_with_dummy_data(db_path: Path) -> None:
                     Balance REAL,
                     Currency TEXT,
                     Account_Status TEXT
-                )    
+                )
             """)
-            # Insert only if Empty
-            cur.execute("select count(1) from transactions")
-            count= cur.fetchone()[0]
+            # Insert only if empty
+            cur.execute("SELECT COUNT(1) FROM transactions")
+            count = cur.fetchone()[0]
             if count == 0:
-                logger.info("Inserting dummy data into transaction table")
-                transactions_data =[
-                    (1001,'Daniel White','B001','2024-01-15','Deposit',5000,15000,'usd','Active'),
-                    (1002,'alice Smith','B002','2024-02-10','Withdraw',2000,8000,'inr','Active'),
-                    (1003, 'Bob Johnson', 'B003', '2024-02-22', 'Deposit', 3000, 9000, 'usd', 'Closed'),
-                    (1004, 'Clara Osward', 'B004', '2024-03-05', 'Deposit', 4000, 5000, 'eur', 'Active'),
-                    (1005, 'Amit verma', 'B005', '2024-03-11', 'Withdraw', 3000, 92000, 'inr', 'Active'),
+                logger.info("Inserting dummy data into transactions table")
+                transactions_data = [
+                    (1001, 'john DOE', 'B001', '2024-01-15', 'Deposit', 5000, 15000, 'usd', 'Active'),
+                    (1002, 'alice SMITH', 'B002', '2024-02-10', 'Withdrawal', 2000, 8000, 'inr', 'Active'),
+                    (1003, 'Bob Johnson', 'B001', '2024-02-22', 'Deposit', 3000, 12000, 'usd', 'Closed'),
+                    (1004, 'Clara Oswald', 'B003', '2024-03-05', 'Deposit', 7000, 20000, 'eur', 'Active'),
+                    (1005, 'Daniel White', 'B002', '2024-03-12', 'Withdrawal', 1500, 6500, 'usd', 'Active'),
                 ]
                 cur.executemany("""
                     INSERT INTO transactions
-                    (Account_Number,Customer_Name,Branch_Code,Transaction_Date,Transaction_Type,
-                     Transaction_Amount,Balance,Currency,Account_Status)
-                     Values (?,?,?,?,?,?,?,?,?)
-                """,transactions_data)
+                    (Account_Number, Customer_Name, Branch_Code, Transaction_Date, Transaction_Type,
+                     Transaction_Amount, Balance, Currency, Account_Status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, transactions_data)
                 conn.commit()
-                logger.debug("Dummy Data Commited to DB")
+                logger.debug("Dummy data committed")
             else:
-                logger.info("Transaction record already Populated (%d rows)", count)
+                logger.debug("Transactions table already populated (%d rows)", count)
     except sqlite3.Error as e:
-        logger.exception("Error while connecting to SQLite database: %s", e)
+        logger.exception("SQLite error while initializing DB: %s", e)
         raise
 
-def export_table_to_csv(db_path:Path,csv_path: Path, table_name:str='transactions') -> None:
+
+def export_table_to_csv(db_path: Path, csv_path: Path, table_name: str = "transactions") -> None:
     """
-    Read Date from table abd write to CSV
+    Read the table from sqlite and write to CSV.
     """
-    logger.debug("Exporting table %s from DB %s to CSV at %s", table_name,db_path,csv_path)
+    logger.debug("Exporting table %s from DB %s to CSV %s", table_name, db_path, csv_path)
     try:
         with sqlite3.connect(str(db_path)) as conn:
-            df= pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
-        if not REQUIRED_DB_COLUMNS.issubset(df.columns):
-            missing= REQUIRED_DB_COLUMNS - set(df.columns)
-            raise ValueError(f"Missing columns: {missing}")
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(csv_path, index=False)
-        logger.info("Exported %d rows to %s", len(df), csv_path)
+            df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
+            if not REQUIRED_DB_COLUMNS.issubset(df.columns):
+                missing = REQUIRED_DB_COLUMNS - set(df.columns)
+                raise ValueError(f"Missing required DB columns: {missing}")
+            csv_path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(csv_path, index=False)
+            logger.info("Exported %d rows to %s", len(df), csv_path)
     except Exception:
-        logger.exception("FAiled to export DB to CSV")
+        logger.exception("Failed to export DB table to CSV")
         raise
-#---- CSV & Transformation Utilities
-def read_csv_validation(path: Path, required_columns: set) -> pd.DataFrame:
+
+
+# ---------- CSV & Transformation Utilities ----------
+def read_csv_validate(path: Path, required_columns: set) -> pd.DataFrame:
     logger.debug("Reading CSV %s", path)
     if not path.exists():
-        msg= f"CSV file not found: {path}"
+        msg = f"CSV file not found: {path}"
         logger.error(msg)
         raise FileNotFoundError(msg)
 
-    df= pd.read_csv(path)
-    logger.debug("Loaded %d rows %s", len(df),path)
-    missing=required_columns - set(df.columns)
+    df = pd.read_csv(path)
+    logger.debug("Loaded %d rows from %s", len(df), path)
+    missing = required_columns - set(df.columns)
     if missing:
-        msg= f"CSV {path} is missing required columns: {missing}"
+        msg = f"CSV {path} is missing required columns: {missing}"
         logger.error(msg)
         raise ValueError(msg)
     return df
+
+
 def transform_and_aggregate(df_db: pd.DataFrame, df_cust: pd.DataFrame,
-                            conversion_rates: dict[str, float])-> Tuple[pd.DataFrame, pd.DataFrame]:
+                            conversion_rates: Dict[str, float]) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Performs joins,transformations,filter and aggregation
-    Returns (joined_df,report_df)
-   """
+    Performs join, transformations, filters and aggregation.
+    Returns (joined_df, report_df)
+    """
     logger.info("Joining DB and customer data on Account_Number")
-    df= pd.merge(df_db,df_cust,on='Account_Number',how='inner',validate='one_to_one')
-    logger.debug("Joined DF shapes: %s", df.shape)
+    df = pd.merge(df_db, df_cust, on="Account_Number", how="inner", validate="one_to_one")
+    logger.debug("Joined DF shape: %s", df.shape)
 
-    # standardize the name
+    # Standardize name
     logger.debug("Standardizing Customer_Name to title case")
-    df['Customer_Name']=df['Customer_Name'].astype(str).str.title()
+    df['Customer_Name'] = df['Customer_Name'].astype(str).str.title()
 
-    # Transaction date -> datetime,extract year/month
+    # Transaction date -> datetime, extract year/month
     logger.debug("Parsing Transaction_Date and extracting year/month")
-    df['Transaction_Date']=pd.to_datetime(df['Transaction_Date'],errors='coerce')
+    df['Transaction_Date'] = pd.to_datetime(df['Transaction_Date'], errors='coerce')
     if df['Transaction_Date'].isnull().any():
-        bad_rows=df[df['Transaction_Date'].isnull()]
-        logger.warning("Some Transaction_Date rows could not be parsed, Example rows: %s ",bad_rows.head().to_dict(orient='records'))
-        df= df.dropna(subset=['Transaction_Date'])
-        logger.debug("Dropped row with invalid Transaction_Date column")
-    df['Transaction_Year']= df['Transaction_Date'].dt.year
-    df['Transaction_Month']= df['Transaction_Date'].dt.strftime('%b')
+        bad_rows = df[df['Transaction_Date'].isnull()]
+        logger.warning("Some Transaction_Date rows could not be parsed. Example rows: %s", bad_rows.head().to_dict(orient='records'))
+        # Optionally drop or raise; here we drop invalid dates
+        df = df.dropna(subset=['Transaction_Date'])
+        logger.debug("Dropped rows with invalid Transaction_Date; new shape %s", df.shape)
 
-    # currency normalization
-    logger.debug("Normalizing currency to uppercase")
-    df['Currency']=df['Currency'].astype(str).str.upper()
+    df['Transaction_Year'] = df['Transaction_Date'].dt.year
+    df['Transaction_Month'] = df['Transaction_Date'].dt.strftime('%b')
 
-    # filter out closed accounts
-    logger.info('filter out closed accounts with account_status=closed')
-    df_active= df[df['Account_Status'].str.strip().str.upper() != 'CLOSED'].copy()
-    logger.debug("Active DF shape: %s",df_active.shape)
+    # Currency normalization
+    logger.debug("Normalizing Currency to uppercase")
+    df['Currency'] = df['Currency'].astype(str).str.upper()
 
-    # convert to USD using conversion rates
+    # Filter out closed accounts
+    logger.info("Filtering out accounts with Account_Status == 'Closed'")
+    df_active = df[df['Account_Status'].str.strip().str.upper() != 'CLOSED'].copy()
+    logger.debug("Active DF shape: %s", df_active.shape)
 
+    # Validate numeric column
+    df_active['Transaction_Amount'] = pd.to_numeric(df_active['Transaction_Amount'], errors='coerce')
+    if df_active['Transaction_Amount'].isnull().any():
+        logger.warning("Some Transaction_Amount could not be converted to numeric; dropping those rows")
+        df_active = df_active.dropna(subset=['Transaction_Amount'])
+
+    # Convert to USD using conversion_rates; unknown currency uses 1.0 (and logs)
     def convert_to_usd(row):
-        cur=str(row['Currency']).upper()
-        rate= conversion_rates.get(cur)
+        cur = str(row['Currency']).upper()
+        rate = conversion_rates.get(cur)
         if rate is None:
-            logger.warning("Unknown currency '%s'", cur)
-            rate=1.0
-        return  row['Transaction_Amount']*rate
+            logger.warning("Unknown currency '%s' for account %s. Using rate=1.0 fallback.", cur, row.get('Account_Number'))
+            rate = 1.0
+        return row['Transaction_Amount'] * rate
 
-    logger.debug('calculating Transaction Amount')
-    df_active['Transaction_Amount_USD']=df_active.apply(convert_to_usd,axis=1)
+    logger.debug("Calculating Transaction_Amount_USD")
+    df_active['Transaction_Amount_USD'] = df_active.apply(convert_to_usd, axis=1)
 
-    # aggregate
-    logger.info('Aggregating by branch code and transaction type')
-    report=(
-        df_active.groupby(['Branch_Code','Transaction_Type'],dropna=False)
+    # Aggregation
+    logger.info("Aggregating by Branch_Code and Transaction_Type")
+    report = (
+        df_active.groupby(['Branch_Code', 'Transaction_Type'], dropna=False)
         .agg(
-         Transaction_Count= ('Transaction_Amount','count'),
-         Total_Amount_USD= ('Transaction_Amount_USD','sum'),
-        ).reset_index()
+            Transaction_Count=('Transaction_Amount', 'count'),
+            Total_Amount_USD=('Transaction_Amount_USD', 'sum')
+        )
+        .reset_index()
     )
-    logger.debug('Report shape %s', report.shape)
+    logger.debug("Report shape: %s", report.shape)
     return df_active, report
 
-#----- save report---
-def save_report(report_df:pd.DataFrame, path:Path) -> None:
+
+# ---------- Save Utilities ----------
+def save_report(report_df: pd.DataFrame, path: Path) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         report_df.to_csv(path, index=False)
-        logger.info("Report saved to %s", path,len(report_df))
+        logger.info("Report saved to %s (rows=%d)", path, len(report_df))
     except Exception:
         logger.exception("Failed to save report to %s", path)
         raise
 
+
+# ---------- Main Orchestration ----------
 def run():
     try:
-
         setup_logging(LOG_FILE)
-        logger.info(f"Logging to {LOG_FILE}")
-        # step-1 initialize the db with dummy data
+        logger.info("Starting banking ETL process")
+
+        # Step 1: init DB with dummy data
         init_sqlite_with_dummy_data(DB_FILE)
-        # export db to csv
-        export_table_to_csv(DB_FILE,DB_EXPORT_CSV)
-        # step-3
+
+        # Step 2: export DB table to CSV
+        export_table_to_csv(DB_FILE, DB_EXPORT_CSV)
+
+        # Step 3: create/read customer CSV (if not present create sample)
         if not CUSTOMER_CSV.exists():
-            logger.info("customer CSV not found, creating new one")
-            sample_customers=pd.DataFrame({
+            logger.info("Customer CSV not found; creating sample at %s", CUSTOMER_CSV)
+            sample_customers = pd.DataFrame({
                 'Account_Number': [1001, 1002, 1003, 1004, 1005, 1006],
                 'Customer_Email': ['john@example.com', 'alice@example.com', 'bob@example.com',
                                    'clara@example.com', 'daniel@example.com', 'extra@example.com'],
@@ -231,29 +257,28 @@ def run():
             CUSTOMER_CSV.parent.mkdir(parents=True, exist_ok=True)
             sample_customers.to_csv(CUSTOMER_CSV, index=False)
 
-        #step-4 read and validate CSV
-        df_db=read_csv_validation(DB_EXPORT_CSV,REQUIRED_DB_COLUMNS)
-        df_cust=read_csv_validation(CUSTOMER_CSV,REQUIRED_CUSTOMER_COLUMNS)
+        # Step 4: read and validate CSVs
+        df_db = read_csv_validate(DB_EXPORT_CSV, REQUIRED_DB_COLUMNS)
+        df_cust = read_csv_validate(CUSTOMER_CSV, REQUIRED_CUSTOMER_COLUMNS)
 
-        # step-5 transform and aggregate
-        joined_df,report_df=transform_and_aggregate(df_db,df_cust,CONVERSION_RATES)
+        # Step 5: transform and aggregate
+        joined_df, report_df = transform_and_aggregate(df_db, df_cust, CONVERSION_RATES)
 
-        # step-6 save joined and report outputs
+        # Step 6: save joined and report outputs (optionally)
+        joined_out = BASE_DIR / "joined_data.csv"
+        joined_df.to_csv(joined_out, index=False)
+        logger.info("Joined data saved to %s", joined_out)
 
-        joined_out= BASE_DIR/ "joined_data.csv"
-        joined_df.to_csv(joined_out,index=False)
-        logger.info("joined data saved to %s", joined_out)
+        save_report(report_df, FINAL_REPORT_CSV)
 
-        save_report(report_df,FINAL_REPORT_CSV)
-        logger.info("ETL Process completed successfully")
+        logger.info("ETL process completed successfully")
         return 0
 
     except Exception as exc:
-        logger.exception("Error while connecting to SQLite database: %s", exc)
-    return  1
+        logger.exception("ETL process failed: %s", exc)
+        return 1
+
+
 if __name__ == "__main__":
-    exit_code=(run())
+    exit_code = run()
     sys.exit(exit_code)
-
-
-
