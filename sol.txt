@@ -185,6 +185,18 @@ def transform_and_aggregate(df_db: pd.DataFrame, df_cust: pd.DataFrame,
 
     logger.debug('calculating Transaction Amount')
     df_active['Transaction_Amount_USD']=df_active.apply(convert_to_usd,axis=1)
+
+    # aggregate
+    logger.info('Aggregating by branch code and transaction type')
+    report=(
+        df_active.groupby(['Branch_Code','Transaction_Type'],dropna=False)
+        .agg(
+         Transaction_Count= ('Transaction_Amount','count'),
+         Total_Amount_USD= ('Transaction_Amount_USD','sum'),
+        ).reset_index()
+    )
+    logger.debug('Report shape %s', report.shape)
+    return df_active, report
 def run():
     try:
 
