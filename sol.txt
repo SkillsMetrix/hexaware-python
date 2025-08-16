@@ -52,5 +52,31 @@ def export_db_to_csv():
    except Exception as e:
        logger.error(f"Error exporting database: {e}")
        raise
+---------
 
+import os
+from datetime import datetime
+
+# Directories
+TEMP_DIR ="temp"
+LOG_DIR = "logs"
+os.makedirs(TEMP_DIR, exist_ok=True)
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Paths
+DB_PATH=os.path.join(TEMP_DIR, "banking.db")
+DB_EXPORT_PATH=os.path.join(TEMP_DIR, "db_export.csv")
+CUSTOMER_DETAILS_PATH=os.path.join(TEMP_DIR, "customer_details.csv")
+FINAL_REPORT_PATH=os.path.join(TEMP_DIR, "final_report.csv")
+
+# Logging
+LOG_FILE=os.path.join(LOG_DIR, f"banking_pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
+# Currency Conversion
+CONVERSION_RATES={
+    "USD": 1.0,
+    "INR": 0.012,
+    "EUR": 1.08,
+}
+---------
 
