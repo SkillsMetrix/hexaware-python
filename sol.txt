@@ -38,20 +38,7 @@ def read_fixed_width_file():
     return df
 
 
--------
 
-import pandas as pd
-from .config import FWF_WIDTHS, FWF_COLUMNS, FIXED_WIDTH_PATH
-
-def read_fixed_width_file():
-    """Reads a fixed-width format file into a DataFrame."""
-    df = pd.read_fwf(
-        FIXED_WIDTH_PATH,
-        widths=FWF_WIDTHS,
-        names=FWF_COLUMNS,
-        dtype=str
-    )
-    return df
 
 
 ------
